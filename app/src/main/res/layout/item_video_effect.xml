@@ -4,7 +4,7 @@
   android:id="@+id/item_video_effect"
   android:layout_width="110dp"
   android:layout_height="100dp"
-  android:paddingRight="10dp">
+  android:paddingRight="3dp">
 
   <ImageView
     android:id="@+id/iv"
@@ -20,7 +20,7 @@
     android:gravity="center"
     android:textColor="@color/ff666666"
     android:textSize="14sp"
-    android:background="#cdffffff"
+    android:background="#deffffff"
     android:text="原始"/>
 
 </FrameLayout>

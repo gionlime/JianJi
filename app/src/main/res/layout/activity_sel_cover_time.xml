@@ -33,7 +33,7 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="14sp"
             android:background="@drawable/btn_edit_next_bg"
-            android:text="发布"
+            android:text="保存"
             android:textColor="@color/white" />
 
     </RelativeLayout>

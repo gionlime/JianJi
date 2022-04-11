@@ -641,8 +641,8 @@ public class TrimVideoActivity extends BaseActivity  {
                 * MAX_COUNT_RANGE);
             rangeWidth = mMaxWidth / MAX_COUNT_RANGE * thumbnailsCount;
         }
-        mRecyclerView
-            .addItemDecoration(new VideoThumbSpacingItemDecoration(MARGIN, thumbnailsCount));
+//        mRecyclerView
+//            .addItemDecoration(new VideoThumbSpacingItemDecoration(MARGIN, thumbnailsCount));
 
         //init seekBar
         if (isOver_180_s) {

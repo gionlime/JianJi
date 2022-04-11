@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">VideoEdit</string>
+    <string name="app_name">特效 分屏</string>
     <string name="filter_none">原图</string>
     <string name="filter_invert">胶片</string>
     <string name="filter_monochrome">单色</string>

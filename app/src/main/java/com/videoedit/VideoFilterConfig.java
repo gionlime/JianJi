@@ -166,7 +166,7 @@
 package com.videoedit;
 
 public class VideoFilterConfig {
-    public static final int VIDEO_INPUT_LENGTH_MAX = 60*60;//60整数倍，展示提示时展示最长多少分钟
+    public static final int VIDEO_INPUT_LENGTH_MAX = 60 * 60;//60整数倍，展示提示时展示最长多少分钟
     public static final int VIDEO_INPUT_LENGTH_MIN = 1;//最小视频导入时长
     public static final int VIDEO_CAPTURE_LENGTH_MAX = 60;//最长裁剪时长
     public static final int VIDEO_CAPTURE_LENGTH_MIN = 1;//最短裁剪时长

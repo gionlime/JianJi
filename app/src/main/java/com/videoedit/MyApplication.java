@@ -170,9 +170,19 @@ import android.content.Context;
 import android.util.DisplayMetrics;
 
 public class MyApplication extends Application {
-    private static Context mContext;
     public static int screenWidth;
     public static int screenHeight;
+    public static MyApplication app;
+    private static Context mContext;
+
+    public static Context getContext() {
+        return mContext;
+    }
+
+    public static MyApplication getInstance() {
+        return app;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -182,15 +192,6 @@ public class MyApplication extends Application {
         screenWidth = mDisplayMetrics.widthPixels;
         screenHeight = mDisplayMetrics.heightPixels;
         app = this;
-    }
-
-    public static Context getContext() {
-        return mContext;
-    }
-
-    public static MyApplication app;
-    public static MyApplication getInstance() {
-        return app;
     }
 
 }

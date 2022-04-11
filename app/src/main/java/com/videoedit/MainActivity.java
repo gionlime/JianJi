@@ -186,13 +186,14 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    String videoFileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,  Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
 
@@ -206,7 +207,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    String videoFileName;
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -230,10 +230,10 @@ public class MainActivity extends AppCompatActivity {
                         int second = s % 60;
                         Log.e(TAG, "视频文件长度,分钟: " + minute + "视频有" + s + "秒");
                         if (s >= VideoFilterConfig.VIDEO_INPUT_LENGTH_MAX) {
-                            Toast.makeText(this, "视频剪辑不能超过"+ (VideoFilterConfig.VIDEO_INPUT_LENGTH_MAX/ 60) + "分钟", Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, "视频剪辑不能超过" + (VideoFilterConfig.VIDEO_INPUT_LENGTH_MAX / 60) + "分钟", Toast.LENGTH_LONG).show();
                             return;
                         } else if (s < VideoFilterConfig.VIDEO_INPUT_LENGTH_MIN) {
-                            Toast.makeText(this, "视频剪辑不能少于"+ VideoFilterConfig.VIDEO_INPUT_LENGTH_MIN + "秒", Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, "视频剪辑不能少于" + VideoFilterConfig.VIDEO_INPUT_LENGTH_MIN + "秒", Toast.LENGTH_LONG).show();
                             return;
                         } else {
                             TrimVideoActivity.startActivity(MainActivity.this, videoFileName);

@@ -25,13 +25,12 @@ import com.temp.videoedit.R;
  */
 public class AutoScrollRecylerView extends RecyclerView {
 
-    private Context mContext;
-
     //动画插值器
     public static final int LINEAR_INTERPOLATOR = 0;
     public static final int ACCELERATE_INTERPOLATOR = 1;
     public static final int DECELERATE_INTERPOLATOR = 2;
     public static final int ACCELERATEDECELERATE_INTERPOLATOR = 3;
+    private Context mContext;
     private Interpolator mInterpolator;
 
     private Scroller mScroller = null;
@@ -54,7 +53,7 @@ public class AutoScrollRecylerView extends RecyclerView {
         mContext = context;
         if (attrs != null) {
             TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.AutoScrollRecylerView);
-            setItemSpace(typedArray.getInt(R.styleable.AutoScrollRecylerView_itemSpace,0));
+            setItemSpace(typedArray.getInt(R.styleable.AutoScrollRecylerView_itemSpace, 0));
             setScrollSpeed(typedArray.getFloat(R.styleable.AutoScrollRecylerView_speed, 0.9f));
             setInterpolator(typedArray.getInt(R.styleable.AutoScrollRecylerView_interpolator, 0));
             typedArray.recycle();
@@ -64,6 +63,7 @@ public class AutoScrollRecylerView extends RecyclerView {
 
     /**
      * 设置条目间距
+     *
      * @param px 条目间距 单位px
      */
     public void setItemSpace(int px) {
@@ -140,7 +140,7 @@ public class AutoScrollRecylerView extends RecyclerView {
         int clickPositionInVisiableItems = position - firstvisiableposition;
         //获取被点击的item
         View clickItem = getChildAt(clickPositionInVisiableItems);
-        if(clickItem != null) {
+        if (clickItem != null) {
             //移动起始X坐标
             int startX = clickItem.getLeft();
             //RecyclerView的中心点x坐标
@@ -148,15 +148,15 @@ public class AutoScrollRecylerView extends RecyclerView {
             //item的宽度
             int clickItem_width = clickItem.getWidth();
             //移动距离
-            int deep = centerX - (startX + clickItem_width/2);
+            int deep = centerX - (startX + clickItem_width / 2);
 
             //防止左右边界过度滑动
-            if(lastvisiableposition == (getLayoutManager()).getItemCount() - 1) {
-                if(deep < 0) {
+            if (lastvisiableposition == (getLayoutManager()).getItemCount() - 1) {
+                if (deep < 0) {
                     deep = getRight() - getChildAt(visiableItemNum - 1).getRight();
                 }
-            } else if(firstvisiableposition == 0) {
-                if(deep > 0) {
+            } else if (firstvisiableposition == 0) {
+                if (deep > 0) {
                     deep = getLeft() - getChildAt(0).getLeft();
                 }
             }
@@ -182,6 +182,7 @@ public class AutoScrollRecylerView extends RecyclerView {
     public class SpacesItemDecoration extends ItemDecoration {
 
         private int space;
+
         public SpacesItemDecoration(int space) {
             this.space = space;
         }
@@ -191,7 +192,7 @@ public class AutoScrollRecylerView extends RecyclerView {
             super.getItemOffsets(outRect, itemPosition, parent);
             outRect.top = 0;
             outRect.bottom = 0;
-            if(itemPosition != 0) {
+            if (itemPosition != 0) {
                 outRect.left = space;
             } else {
                 outRect.left = 0;

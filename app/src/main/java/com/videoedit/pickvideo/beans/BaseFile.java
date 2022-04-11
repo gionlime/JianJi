@@ -169,6 +169,26 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class BaseFile implements Parcelable {
+    public static final Creator<BaseFile> CREATOR = new Creator<BaseFile>() {
+        @Override
+        public BaseFile[] newArray(int size) {
+            return new BaseFile[size];
+        }
+
+        @Override
+        public BaseFile createFromParcel(Parcel in) {
+            BaseFile file = new BaseFile();
+            file.id = in.readLong();
+            file.name = in.readString();
+            file.path = in.readString();
+            file.size = in.readLong();
+            file.bucketId = in.readString();
+            file.bucketName = in.readString();
+            file.date = in.readLong();
+            file.isSelected = in.readByte() != 0;
+            return file;
+        }
+    };
     private long id;
     private String name;
     private String path;
@@ -272,25 +292,4 @@ public class BaseFile implements Parcelable {
     public int describeContents() {
         return 0;
     }
-
-    public static final Creator<BaseFile> CREATOR = new Creator<BaseFile>() {
-        @Override
-        public BaseFile[] newArray(int size) {
-            return new BaseFile[size];
-        }
-
-        @Override
-        public BaseFile createFromParcel(Parcel in) {
-            BaseFile file = new BaseFile();
-            file.id = in.readLong();
-            file.name = in.readString();
-            file.path = in.readString();
-            file.size = in.readLong();
-            file.bucketId = in.readString();
-            file.bucketName = in.readString();
-            file.date = in.readLong();
-            file.isSelected = in.readByte() != 0;
-            return file;
-        }
-    };
 }

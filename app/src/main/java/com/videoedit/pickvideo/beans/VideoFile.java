@@ -169,6 +169,28 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class VideoFile extends BaseFile implements Parcelable {
+    public static final Creator<VideoFile> CREATOR = new Creator<VideoFile>() {
+        @Override
+        public VideoFile[] newArray(int size) {
+            return new VideoFile[size];
+        }
+
+        @Override
+        public VideoFile createFromParcel(Parcel in) {
+            VideoFile file = new VideoFile();
+            file.setId(in.readLong());
+            file.setName(in.readString());
+            file.setPath(in.readString());
+            file.setSize(in.readLong());
+            file.setBucketId(in.readString());
+            file.setBucketName(in.readString());
+            file.setDate(in.readLong());
+            file.setSelected(in.readByte() != 0);
+            file.setDuration(in.readLong());
+            file.setThumbnail(in.readString());
+            return file;
+        }
+    };
     private long duration;
     private String thumbnail;
 
@@ -206,27 +228,4 @@ public class VideoFile extends BaseFile implements Parcelable {
     public int describeContents() {
         return 0;
     }
-
-    public static final Creator<VideoFile> CREATOR = new Creator<VideoFile>() {
-        @Override
-        public VideoFile[] newArray(int size) {
-            return new VideoFile[size];
-        }
-
-        @Override
-        public VideoFile createFromParcel(Parcel in) {
-            VideoFile file = new VideoFile();
-            file.setId(in.readLong());
-            file.setName(in.readString());
-            file.setPath(in.readString());
-            file.setSize(in.readLong());
-            file.setBucketId(in.readString());
-            file.setBucketName(in.readString());
-            file.setDate(in.readLong());
-            file.setSelected(in.readByte() != 0);
-            file.setDuration(in.readLong());
-            file.setThumbnail(in.readString());
-            return file;
-        }
-    };
 }

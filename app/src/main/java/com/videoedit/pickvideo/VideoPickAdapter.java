@@ -209,33 +209,33 @@ public class VideoPickAdapter extends BaseAdapter<VideoFile, VideoPickAdapter.Vi
     @Override
     public void onBindViewHolder(final VideoPickViewHolder holder, int position) {
 
-            holder.mIvCamera.setVisibility(View.INVISIBLE);
-            holder.mIvThumbnail.setVisibility(View.VISIBLE);
-            holder.mDurationLayout.setVisibility(View.VISIBLE);
+        holder.mIvCamera.setVisibility(View.INVISIBLE);
+        holder.mIvThumbnail.setVisibility(View.VISIBLE);
+        holder.mDurationLayout.setVisibility(View.VISIBLE);
 
-            final VideoFile file;
+        final VideoFile file;
 
-                file = mList.get(position);
+        file = mList.get(position);
 
-            Glide.with(mContext)
-                    .load(file.getPath())
-                    .into(holder.mIvThumbnail);
+        Glide.with(mContext)
+                .load(file.getPath())
+                .into(holder.mIvThumbnail);
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-                    int index = holder.getAdapterPosition();
-                    mList.get(index).setSelected(true);
+                int index = holder.getAdapterPosition();
+                mList.get(index).setSelected(true);
 
-                    if (mListener != null) {
-                        mListener.OnSelectStateChanged(mList.get(index));
-                    }
-
+                if (mListener != null) {
+                    mListener.OnSelectStateChanged(mList.get(index));
                 }
-            });
 
-            holder.mDuration.setText(Util.getDurationString(file.getDuration()));
+            }
+        });
+
+        holder.mDuration.setText(Util.getDurationString(file.getDuration()));
     }
 
     @Override

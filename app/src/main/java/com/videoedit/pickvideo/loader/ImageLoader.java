@@ -165,12 +165,12 @@
 
 package com.videoedit.pickvideo.loader;
 
+import static android.provider.MediaStore.MediaColumns.MIME_TYPE;
+
 import android.content.Context;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.CursorLoader;
-
-import static android.provider.MediaStore.MediaColumns.MIME_TYPE;
 
 public class ImageLoader extends CursorLoader {
     private static final String[] IMAGE_PROJECTION = {
@@ -197,10 +197,10 @@ public class ImageLoader extends CursorLoader {
         setUri(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         setSortOrder(MediaStore.Images.Media.DATE_ADDED + " DESC");
 
-        setSelection(MIME_TYPE + "=? or " + MIME_TYPE + "=? or "+ MIME_TYPE + "=? or " + MIME_TYPE + "=?");
+        setSelection(MIME_TYPE + "=? or " + MIME_TYPE + "=? or " + MIME_TYPE + "=? or " + MIME_TYPE + "=?");
 
         String[] selectionArgs;
-        selectionArgs = new String[] { "image/jpeg", "image/png", "image/jpg","image/gif" };
+        selectionArgs = new String[]{"image/jpeg", "image/png", "image/jpg", "image/gif"};
         setSelectionArgs(selectionArgs);
     }
 }

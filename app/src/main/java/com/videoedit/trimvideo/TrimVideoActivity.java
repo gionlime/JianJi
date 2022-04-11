@@ -220,7 +220,6 @@ import com.videoedit.view.FilterModel;
 import com.videoedit.view.NormalProgressDialog;
 import com.videoedit.view.RangeSeekBar;
 import com.videoedit.view.VideoEditInfo;
-import com.videoedit.view.VideoThumbSpacingItemDecoration;
 
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
@@ -238,8 +237,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class TrimVideoActivity extends BaseActivity  {
+public class TrimVideoActivity extends BaseActivity {
 
+    private static final String TAG = TrimVideoActivity.class.getSimpleName();
+    private static final long MIN_CUT_DURATION = VideoFilterConfig.VIDEO_CAPTURE_LENGTH_MIN * 1000L;// 最小剪辑时间3s
+    private static final long MAX_CUT_DURATION = VideoFilterConfig.VIDEO_CAPTURE_LENGTH_MAX * 1000L;//视频最多剪切多长时间
+    private static final int MAX_COUNT_RANGE = 10;//seekBar的区域内一共有多少张图片
+    private static final int MARGIN = UIUtils.dp2Px(56); //左右两边间距
+    private final MainHandler mUIHandler = new MainHandler(this);
     @BindView(R.id.glsurfaceview)
     GlVideoView mSurfaceView;
     @BindView(R.id.video_shoot_tip)
@@ -268,36 +273,19 @@ public class TrimVideoActivity extends BaseActivity  {
     RelativeLayout mLocalTitle;
     @BindView(R.id.second_mode_title)
     RelativeLayout mSecondModeTitle;
-
-
-    private RangeSeekBar seekBar;
-
-    @BindView(R.id.bottom_bar)
-            LinearLayout mBottomBar;
-
-    private int mVideoViewInitHeight = 0;
-
-    interface MODE_FILTER{
-        int MODE_NORMAL = 1001;
-        int MODE_SPLIT = 1002;
-    }
-
-    private int mCurrentSplitMode = MODE_FILTER.MODE_NORMAL;
-
-    //这个是相对于自身往上平移自身高度的动画
-    TranslateAnimation translateAnimation = new TranslateAnimation(Animation.RELATIVE_TO_SELF,0.0f,
-            Animation.RELATIVE_TO_SELF,0.0f,Animation.RELATIVE_TO_SELF,0.0f,Animation.RELATIVE_TO_SELF,-1.0f);
     //这个是相对于自身往下平移自身高度的动画
-
+    @BindView(R.id.bottom_bar)
+    LinearLayout mBottomBar;
+    //这个是相对于自身往上平移自身高度的动画
+    TranslateAnimation translateAnimation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
+            Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, -1.0f);
     TranslateAnimation translateAnimation1 = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
             Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
             0.0f, Animation.RELATIVE_TO_SELF, 1.0f);
-
-    private static final String TAG = TrimVideoActivity.class.getSimpleName();
-    private static final long MIN_CUT_DURATION = VideoFilterConfig.VIDEO_CAPTURE_LENGTH_MIN * 1000L;// 最小剪辑时间3s
-    private static final long MAX_CUT_DURATION = VideoFilterConfig.VIDEO_CAPTURE_LENGTH_MAX * 1000L;//视频最多剪切多长时间
-    private static final int MAX_COUNT_RANGE = 10;//seekBar的区域内一共有多少张图片
-    private static final int MARGIN = UIUtils.dp2Px(56); //左右两边间距
+    Surface surface;
+    private RangeSeekBar seekBar;
+    private int mVideoViewInitHeight = 0;
+    private int mCurrentSplitMode = MODE_FILTER.MODE_NORMAL;
     private ExtractVideoInfoUtil mExtractVideoInfoUtil;
     private int mMaxWidth; //可裁剪区域的最大宽度
     private long duration; //视频总时长
@@ -322,24 +310,107 @@ public class TrimVideoActivity extends BaseActivity  {
     private ValueAnimator mEffectAnimator;
     private SurfaceTexture mSurfaceTexture;
     private MediaPlayer mMediaPlayer;
+    private final RecyclerView.OnScrollListener mOnScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            Log.d(TAG, "-------newState:>>>>>" + newState);
+            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                isSeeking = false;
+//                if (isOverScaledTouchSlop) {
+//                    videoStart();
+//                }
+            } else {
+                isSeeking = true;
+//                if (isOverScaledTouchSlop) {
+//                    videoPause();
+//                }
+            }
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            isSeeking = false;
+            int scrollX = getScrollXDistance();
+            //达不到滑动的距离
+//            if (Math.abs(lastScrollX - scrollX) < mScaledTouchSlop) {
+//                isOverScaledTouchSlop = false;
+//                return;
+//            }
+//            isOverScaledTouchSlop = true;
+            Log.d(TAG, "-------scrollX:>>>>>" + scrollX);
+            //初始状态,why ? 因为默认的时候有56dp的空白！
+            if (scrollX == -MARGIN) {
+                scrollPos = 0;
+            } else {
+                // why 在这里处理一下,因为onScrollStateChanged早于onScrolled回调
+//                videoPause();
+                isSeeking = true;
+                scrollPos = (long) (averageMsPx * (MARGIN + scrollX));
+                Log.d(TAG, "-------scrollPos:>>>>>" + scrollPos);
+                leftProgress = seekBar.getSelectedMinValue() + scrollPos;
+                rightProgress = seekBar.getSelectedMaxValue() + scrollPos;
+                Log.d(TAG, "-------leftProgress:>>>>>" + leftProgress);
+                mMediaPlayer.seekTo((int) leftProgress);
+            }
+            lastScrollX = scrollX;
+        }
+    };
+    private final RangeSeekBar.OnRangeSeekBarChangeListener mOnRangeSeekBarChangeListener = new RangeSeekBar.OnRangeSeekBarChangeListener() {
+        @Override
+        public void onRangeSeekBarValuesChanged(RangeSeekBar bar, long minValue, long maxValue,
+                                                int action, boolean isMin, RangeSeekBar.Thumb pressedThumb) {
+            Log.d(TAG, "-----minValue----->>>>>>" + minValue);
+            Log.d(TAG, "-----maxValue----->>>>>>" + maxValue);
+            leftProgress = minValue + scrollPos;
+            rightProgress = maxValue + scrollPos;
+            Log.d(TAG, "-----leftProgress----->>>>>>" + leftProgress);
+            Log.d(TAG, "-----rightProgress----->>>>>>" + rightProgress);
+            switch (action) {
+                case MotionEvent.ACTION_DOWN:
+                    Log.d(TAG, "-----ACTION_DOWN---->>>>>>");
+                    isSeeking = false;
+//                    videoPause();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    Log.d(TAG, "-----ACTION_MOVE---->>>>>>");
+                    isSeeking = true;
+                    mMediaPlayer.seekTo((int) (pressedThumb == RangeSeekBar.Thumb.MIN ?
+                            leftProgress : rightProgress));
+                    break;
+                case MotionEvent.ACTION_UP:
+                    Log.d(TAG, "-----ACTION_UP--leftProgress--->>>>>>" + leftProgress);
+                    isSeeking = false;
+                    //从minValue开始播
+                    mMediaPlayer.seekTo((int) leftProgress);
+//                    videoStart();
+                    mTvShootTip
+                            .setText(String.format("裁剪 %d s", (rightProgress - leftProgress) / 1000));
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
     private Mp4Composer mMp4Composer;
     private int rotate;
+    /**
+     * 小数
+     *
+     * @return
+     */
+    private float mVideoRate = 0f;
+    private ValueAnimator animator;
+    private Handler handler = new Handler();
+    private Runnable run = new Runnable() {
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        init();
-        setContentView( R.layout.activity_trim_video);
-        ButterKnife.bind(this);
-
-        initView();
-        mInitRotation = getRotation();
-    }
-
-    @Override
-    public void permissionGranted(){
-
-    }
+        @Override
+        public void run() {
+            videoProgressUpdate();
+            handler.postDelayed(run, 100);
+        }
+    };
 
     public static void startActivity(Context context, String videoPath) {
         Intent intent = new Intent(context, TrimVideoActivity.class);
@@ -347,6 +418,21 @@ public class TrimVideoActivity extends BaseActivity  {
         context.startActivity(intent);
     }
 
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        init();
+        setContentView(R.layout.activity_trim_video);
+        ButterKnife.bind(this);
+
+        initView();
+        mInitRotation = getRotation();
+    }
+
+    @Override
+    public void permissionGranted() {
+
+    }
 
     protected void init() {
         mVideoPath = getIntent().getStringExtra("videoPath");
@@ -362,42 +448,42 @@ public class TrimVideoActivity extends BaseActivity  {
                 e.onComplete();
             }
         })
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Observer<String>() {
-                @Override
-                public void onSubscribe(Disposable d) {
-                   subscribe(d);
-                }
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        subscribe(d);
+                    }
 
-                @Override
-                public void onNext(String s) {
-                    duration = Long.valueOf(mExtractVideoInfoUtil.getVideoLength());
-                    //矫正获取到的视频时长不是整数问题
-                    float tempDuration = duration / 1000f;
-                    duration = new BigDecimal(tempDuration).setScale(0, BigDecimal.ROUND_HALF_DOWN).intValue() * 1000;
-                    Log.e(TAG, "视频总时长：" + duration);
-                    initEditVideo();
-                }
+                    @Override
+                    public void onNext(String s) {
+                        duration = Long.valueOf(mExtractVideoInfoUtil.getVideoLength());
+                        //矫正获取到的视频时长不是整数问题
+                        float tempDuration = duration / 1000f;
+                        duration = new BigDecimal(tempDuration).setScale(0, BigDecimal.ROUND_HALF_DOWN).intValue() * 1000;
+                        Log.e(TAG, "视频总时长：" + duration);
+                        initEditVideo();
+                    }
 
-                @Override
-                public void onError(Throwable e) {
+                    @Override
+                    public void onError(Throwable e) {
 
-                }
+                    }
 
-                @Override
-                public void onComplete() {
+                    @Override
+                    public void onComplete() {
 
-                }
-            });
+                    }
+                });
     }
 
     protected void initView() {
         mRecyclerView
-            .setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+                .setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         videoEditAdapter = new TrimVideoAdapter(this, mMaxWidth / MAX_COUNT_RANGE);
         mRecyclerView.setAdapter(videoEditAdapter);
-        if(android.os.Build.VERSION.SDK_INT>=26){
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
             mSurfaceView.setVisibility(View.INVISIBLE);
             mSurfaceView.setVisibility(View.VISIBLE);
         }
@@ -413,26 +499,26 @@ public class TrimVideoActivity extends BaseActivity  {
 
         //滤镜效果集合
         mMagicFilterTypesNormal = new MagicFilterType[]{
-            MagicFilterType.NONE, MagicFilterType.INVERT,
-            MagicFilterType.SEPIA, MagicFilterType.BLACKANDWHITE,
-            MagicFilterType.TEMPERATURE, MagicFilterType.OVERLAY,
+                MagicFilterType.NONE, MagicFilterType.INVERT,
+                MagicFilterType.SEPIA, MagicFilterType.BLACKANDWHITE,
+                MagicFilterType.TEMPERATURE, MagicFilterType.OVERLAY,
                 MagicFilterType.POSTERIZE,
-            MagicFilterType.CONTRAST, MagicFilterType.GAMMA,
-            MagicFilterType.HUE, MagicFilterType.CROSSPROCESS,
-            MagicFilterType.GRAYSCALE,
+                MagicFilterType.CONTRAST, MagicFilterType.GAMMA,
+                MagicFilterType.HUE, MagicFilterType.CROSSPROCESS,
+                MagicFilterType.GRAYSCALE,
         };
 
         for (int i = 0; i < mMagicFilterTypesNormal.length; i++) {
             FilterModel model = new FilterModel();
             model.setName(
-                UIUtils.getString(MagicFilterFactory.filterType2Name(mMagicFilterTypesNormal[i])));
+                    UIUtils.getString(MagicFilterFactory.filterType2Name(mMagicFilterTypesNormal[i])));
             mVideoEffectsNormal.add(model);
         }
 
 
         //滤镜效果集合
         mMagicFilterTypesSplit = new MagicFilterType[]{
-                MagicFilterType.NONE,MagicFilterType.SPLIT_BLUR, MagicFilterType.SPLIT_BLUR_WHITE,
+                MagicFilterType.NONE, MagicFilterType.SPLIT_BLUR, MagicFilterType.SPLIT_BLUR_WHITE,
                 MagicFilterType.SPLIT_2, MagicFilterType.SPLIT_3,
         };
 
@@ -460,13 +546,13 @@ public class TrimVideoActivity extends BaseActivity  {
                 addEffectView();
                 break;
             case R.id.ll_trim_tab: //分屏
-            mViewTrimIndicator.setVisibility(View.VISIBLE);
-            mViewEffectIndicator.setVisibility(View.GONE);
+                mViewTrimIndicator.setVisibility(View.VISIBLE);
+                mViewEffectIndicator.setVisibility(View.GONE);
                 mCurrentSplitMode = MODE_FILTER.MODE_SPLIT;
                 mMagicFilterTypes = mMagicFilterTypesSplit;
                 mVideoEffects = mVideoEffectsSplit;
                 addEffectView();
-            break;
+                break;
             case R.id.local_video_next_tv:
                 trimmerVideo();
                 break;
@@ -499,9 +585,9 @@ public class TrimVideoActivity extends BaseActivity  {
                 Log.d(TAG, "-------mInitRotation--->>>>" + mInitRotation);
                 Log.d(TAG, "-------rotate--->>>>" + rotate);
                 int rotation = mInitRotation + rotate;
-                if(rotate == 90 || rotate == 270){
+                if (rotate == 90 || rotate == 270) {
                     setLandScapeParam();
-                }else{
+                } else {
                     setPortraitParam();
                 }
 //                mLocalVideoView.setRotation(rotation);
@@ -520,40 +606,35 @@ public class TrimVideoActivity extends BaseActivity  {
         }
     }
 
-
     @NonNull
     private void setPortraitParam() {
         ViewGroup.LayoutParams layoutParams1 = mSurfaceView.getLayoutParams();
         layoutParams1.height = mVideoViewInitHeight;
-        layoutParams1.width = (int)(mVideoViewInitHeight * getWHRate());
-        mSurfaceView.setLayoutParams(layoutParams1);
-        mSurfaceView.requestLayout();
-    }
-    @NonNull
-    private void setLandScapeParam() {
-        ViewGroup.LayoutParams layoutParams1 = mSurfaceView.getLayoutParams();
-        layoutParams1.width = MyApplication.screenWidth;
-        Log.d(TAG, "MyApplication.screenWidth --->" + MyApplication.screenWidth );
-        Log.d(TAG, "mExtractVideoInfoUtil.getVideoWidth()--->" + mExtractVideoInfoUtil.getVideoWidth());
-        Log.d(TAG, "mExtractVideoInfoUtil.getVideoHeight()--->" + mExtractVideoInfoUtil.getVideoHeight());
-        layoutParams1.height = (int)(MyApplication.screenWidth * getWHRate());
+        layoutParams1.width = (int) (mVideoViewInitHeight * getWHRate());
         mSurfaceView.setLayoutParams(layoutParams1);
         mSurfaceView.requestLayout();
     }
 
-    /**
-     * 小数
-     * @return
-     */
-    private float mVideoRate = 0f;
-    private float getWHRate(){
-        if(mVideoRate == 0f){
+    @NonNull
+    private void setLandScapeParam() {
+        ViewGroup.LayoutParams layoutParams1 = mSurfaceView.getLayoutParams();
+        layoutParams1.width = MyApplication.screenWidth;
+        Log.d(TAG, "MyApplication.screenWidth --->" + MyApplication.screenWidth);
+        Log.d(TAG, "mExtractVideoInfoUtil.getVideoWidth()--->" + mExtractVideoInfoUtil.getVideoWidth());
+        Log.d(TAG, "mExtractVideoInfoUtil.getVideoHeight()--->" + mExtractVideoInfoUtil.getVideoHeight());
+        layoutParams1.height = (int) (MyApplication.screenWidth * getWHRate());
+        mSurfaceView.setLayoutParams(layoutParams1);
+        mSurfaceView.requestLayout();
+    }
+
+    private float getWHRate() {
+        if (mVideoRate == 0f) {
             int width = mExtractVideoInfoUtil.getVideoWidth();
             int height = mExtractVideoInfoUtil.getVideoHeight();
-            if(width > height){
-                mVideoRate = height/(float)width;
-            }else{
-                mVideoRate = width/(float)height;
+            if (width > height) {
+                mVideoRate = height / (float) width;
+            } else {
+                mVideoRate = width / (float) height;
             }
         }
 
@@ -567,14 +648,14 @@ public class TrimVideoActivity extends BaseActivity  {
         mLlEffectContainer.removeAllViews();
         for (int i = 0; i < mVideoEffects.size(); i++) {
             View itemView = LayoutInflater.from(this)
-                .inflate(R.layout.item_video_effect, mLlEffectContainer, false);
+                    .inflate(R.layout.item_video_effect, mLlEffectContainer, false);
             TextView tv = itemView.findViewById(R.id.tv);
             ImageView iv = itemView.findViewById(R.id.iv);
             FilterModel model = mVideoEffects.get(i);
             int thumbId = MagicFilterFactory.filterType2Thumb(mMagicFilterTypes[i]);
             Glide.with(MyApplication.getContext())
-                .load(thumbId)
-                .into(iv);
+                    .load(thumbId)
+                    .into(iv);
             tv.setText(model.getName());
             int index = i;
             itemView.setOnClickListener(v -> {
@@ -616,7 +697,7 @@ public class TrimVideoActivity extends BaseActivity  {
             public void onAnimationUpdate(ValueAnimator animation) {
                 int value = (Integer) animation.getAnimatedValue();
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, value, Gravity.BOTTOM);
+                        LayoutParams.MATCH_PARENT, value, Gravity.BOTTOM);
                 tv.setLayoutParams(params);
                 tv.requestLayout();
             }
@@ -638,7 +719,7 @@ public class TrimVideoActivity extends BaseActivity  {
         } else {
             isOver_180_s = true;
             thumbnailsCount = (int) (endPosition * 1.0f / (MAX_CUT_DURATION * 1.0f)
-                * MAX_COUNT_RANGE);
+                    * MAX_COUNT_RANGE);
             rangeWidth = mMaxWidth / MAX_COUNT_RANGE * thumbnailsCount;
         }
 //        mRecyclerView
@@ -668,8 +749,8 @@ public class TrimVideoActivity extends BaseActivity  {
         int extractW = mMaxWidth / MAX_COUNT_RANGE;
         int extractH = UIUtils.dp2Px(62);
         mExtractFrameWorkThread = new ExtractFrameWorkThread(extractW, extractH, mUIHandler,
-            mVideoPath,
-            OutPutFileDirPath, startPosition, endPosition, thumbnailsCount);
+                mVideoPath,
+                OutPutFileDirPath, startPosition, endPosition, thumbnailsCount);
         mExtractFrameWorkThread.start();
 
         //init pos icon start
@@ -693,19 +774,17 @@ public class TrimVideoActivity extends BaseActivity  {
                 MediaFormat format = extractor.getTrackFormat(m);
                 String mime = format.getString(MediaFormat.KEY_MIME);
                 if (mime.contains("video")) {
-                    System.out.println("cdw format = "+format);
+                    System.out.println("cdw format = " + format);
                     return format.getInteger(MediaFormat.KEY_ROTATION);
                 }
             }
         } catch (Throwable throwable) {
-            System.out.println("cdw error "+Log.getStackTraceString(throwable));
+            System.out.println("cdw error " + Log.getStackTraceString(throwable));
             return 0;
         }
         return 0;
     }
 
-
-    Surface surface;
     /**
      * 初始化MediaPlayer
      */
@@ -811,17 +890,17 @@ public class TrimVideoActivity extends BaseActivity  {
                 });
     }
 
-    private boolean getFlipHorizontal(int initrotation, int rotation){
-        if(initrotation == 90){
-            switch (rotation){
+    private boolean getFlipHorizontal(int initrotation, int rotation) {
+        if (initrotation == 90) {
+            switch (rotation) {
                 case 0:
                 case 180:
                     return true;
-                    default:
-                        return false;
+                default:
+                    return false;
             }
-        }else{
-            switch (rotation){
+        } else {
+            switch (rotation) {
                 case 0:
                 case 180:
                     return false;
@@ -831,17 +910,17 @@ public class TrimVideoActivity extends BaseActivity  {
         }
     }
 
-    private boolean getFlipVertial(int initrotation, int rotation){
-        if(initrotation == 90){
-            switch (rotation){
+    private boolean getFlipVertial(int initrotation, int rotation) {
+        if (initrotation == 90) {
+            switch (rotation) {
                 case 0:
                 case 180:
                     return false;
                 default:
                     return true;
             }
-        }else{
-            switch (rotation){
+        } else {
+            switch (rotation) {
                 case 0:
                 case 180:
                     return true;
@@ -860,15 +939,13 @@ public class TrimVideoActivity extends BaseActivity  {
         int genWidth;
         int genHeight;
         int finalRotate = rotate + mInitRotation;
-        if(finalRotate == 0 || finalRotate == 180){
+        if (finalRotate == 0 || finalRotate == 180) {
             genWidth = mExtractVideoInfoUtil.getVideoWidth();
             genHeight = mExtractVideoInfoUtil.getVideoHeight();
-        }else{
+        } else {
             genWidth = mExtractVideoInfoUtil.getVideoHeight();
             genHeight = mExtractVideoInfoUtil.getVideoWidth();
         }
-
-
 
 
         mMp4Composer = new Mp4Composer(srcPath, outputPath)
@@ -894,7 +971,7 @@ public class TrimVideoActivity extends BaseActivity  {
                         Log.d(TAG, "filterVideo---onCompleted");
                         NormalProgressDialog.stopLoading();
                         runOnUiThread(() -> {
-                            SelCoverTimeActivity.launch(TrimVideoActivity.this,outputPath);
+                            SelCoverTimeActivity.launch(TrimVideoActivity.this, outputPath);
 //                            finish();
 //                            compressVideo(outputPath);
                         });
@@ -915,54 +992,6 @@ public class TrimVideoActivity extends BaseActivity  {
                 .start();
     }
 
-    private final RecyclerView.OnScrollListener mOnScrollListener = new RecyclerView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
-            Log.d(TAG, "-------newState:>>>>>" + newState);
-            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                isSeeking = false;
-//                if (isOverScaledTouchSlop) {
-//                    videoStart();
-//                }
-            } else {
-                isSeeking = true;
-//                if (isOverScaledTouchSlop) {
-//                    videoPause();
-//                }
-            }
-        }
-
-        @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
-            isSeeking = false;
-            int scrollX = getScrollXDistance();
-            //达不到滑动的距离
-//            if (Math.abs(lastScrollX - scrollX) < mScaledTouchSlop) {
-//                isOverScaledTouchSlop = false;
-//                return;
-//            }
-//            isOverScaledTouchSlop = true;
-            Log.d(TAG, "-------scrollX:>>>>>" + scrollX);
-            //初始状态,why ? 因为默认的时候有56dp的空白！
-            if (scrollX == -MARGIN) {
-                scrollPos = 0;
-            } else {
-                // why 在这里处理一下,因为onScrollStateChanged早于onScrolled回调
-//                videoPause();
-                isSeeking = true;
-                scrollPos = (long) (averageMsPx * (MARGIN + scrollX));
-                Log.d(TAG, "-------scrollPos:>>>>>" + scrollPos);
-                leftProgress = seekBar.getSelectedMinValue() + scrollPos;
-                rightProgress = seekBar.getSelectedMaxValue() + scrollPos;
-                Log.d(TAG, "-------leftProgress:>>>>>" + leftProgress);
-                mMediaPlayer.seekTo((int) leftProgress);
-            }
-            lastScrollX = scrollX;
-        }
-    };
-
     /**
      * 水平滑动了多少px
      *
@@ -976,23 +1005,21 @@ public class TrimVideoActivity extends BaseActivity  {
         return (position) * itemWidth - firstVisibleChildView.getLeft();
     }
 
-    private ValueAnimator animator;
-
     private void anim() {
 //        Log.d(TAG, "--anim--onProgressUpdate---->>>>>>>" + mMediaPlayer.getCurrentPosition());
         if (mIvPosition.getVisibility() == View.GONE) {
             mIvPosition.setVisibility(View.VISIBLE);
         }
         final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mIvPosition
-            .getLayoutParams();
+                .getLayoutParams();
         int start = (int) (MARGIN
-            + (leftProgress/*mVideoView.getCurrentPosition()*/ - scrollPos) * averagePxMs);
+                + (leftProgress/*mVideoView.getCurrentPosition()*/ - scrollPos) * averagePxMs);
         int end = (int) (MARGIN + (rightProgress - scrollPos) * averagePxMs);
         animator = ValueAnimator
-            .ofInt(start, end)
-            .setDuration(
-                (rightProgress - scrollPos) - (leftProgress/*mVideoView.getCurrentPosition()*/
-                    - scrollPos));
+                .ofInt(start, end)
+                .setDuration(
+                        (rightProgress - scrollPos) - (leftProgress/*mVideoView.getCurrentPosition()*/
+                                - scrollPos));
         animator.setInterpolator(new LinearInterpolator());
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -1003,67 +1030,6 @@ public class TrimVideoActivity extends BaseActivity  {
         });
         animator.start();
     }
-
-    private final MainHandler mUIHandler = new MainHandler(this);
-
-    private static class MainHandler extends Handler {
-
-        private final WeakReference<TrimVideoActivity> mActivity;
-
-        MainHandler(TrimVideoActivity activity) {
-            mActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            TrimVideoActivity activity = mActivity.get();
-            if (activity != null) {
-                if (msg.what == ExtractFrameWorkThread.MSG_SAVE_SUCCESS) {
-                    if (activity.videoEditAdapter != null) {
-                        VideoEditInfo info = (VideoEditInfo) msg.obj;
-                        activity.videoEditAdapter.addItemVideoInfo(info);
-                    }
-                }
-            }
-        }
-    }
-
-    private final RangeSeekBar.OnRangeSeekBarChangeListener mOnRangeSeekBarChangeListener = new RangeSeekBar.OnRangeSeekBarChangeListener() {
-        @Override
-        public void onRangeSeekBarValuesChanged(RangeSeekBar bar, long minValue, long maxValue,
-            int action, boolean isMin, RangeSeekBar.Thumb pressedThumb) {
-            Log.d(TAG, "-----minValue----->>>>>>" + minValue);
-            Log.d(TAG, "-----maxValue----->>>>>>" + maxValue);
-            leftProgress = minValue + scrollPos;
-            rightProgress = maxValue + scrollPos;
-            Log.d(TAG, "-----leftProgress----->>>>>>" + leftProgress);
-            Log.d(TAG, "-----rightProgress----->>>>>>" + rightProgress);
-            switch (action) {
-                case MotionEvent.ACTION_DOWN:
-                    Log.d(TAG, "-----ACTION_DOWN---->>>>>>");
-                    isSeeking = false;
-//                    videoPause();
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    Log.d(TAG, "-----ACTION_MOVE---->>>>>>");
-                    isSeeking = true;
-                    mMediaPlayer.seekTo((int) (pressedThumb == RangeSeekBar.Thumb.MIN ?
-                        leftProgress : rightProgress));
-                    break;
-                case MotionEvent.ACTION_UP:
-                    Log.d(TAG, "-----ACTION_UP--leftProgress--->>>>>>" + leftProgress);
-                    isSeeking = false;
-                    //从minValue开始播
-                    mMediaPlayer.seekTo((int) leftProgress);
-//                    videoStart();
-                    mTvShootTip
-                        .setText(String.format("裁剪 %d s", (rightProgress - leftProgress) / 1000));
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
 
     private void videoStart() {
         Log.d(TAG, "----videoStart----->>>>>>>");
@@ -1082,14 +1048,14 @@ public class TrimVideoActivity extends BaseActivity  {
         mSurfaceView.setZOrderMediaOverlay(true);
         mRlVideo.bringChildToFront(mSurfaceView);
         long currentPosition = mMediaPlayer.getCurrentPosition();
-            if (currentPosition >= (rightProgress - 500)) {
-                mMediaPlayer.seekTo((int) leftProgress);
-                mIvPosition.clearAnimation();
-                if (animator != null && animator.isRunning()) {
-                    animator.cancel();
-                }
-                anim();
+        if (currentPosition >= (rightProgress - 500)) {
+            mMediaPlayer.seekTo((int) leftProgress);
+            mIvPosition.clearAnimation();
+            if (animator != null && animator.isRunning()) {
+                animator.cancel();
             }
+            anim();
+        }
     }
 
 
@@ -1124,23 +1090,12 @@ public class TrimVideoActivity extends BaseActivity  {
                 int valueTwo = mSurfaceView.getHeight();
 
 
-                mVideoViewInitHeight = valueOne > valueTwo ? valueOne:valueTwo;
+                mVideoViewInitHeight = valueOne > valueTwo ? valueOne : valueTwo;
                 mSurfaceView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
 
     }
-
-
-    private Handler handler = new Handler();
-    private Runnable run = new Runnable() {
-
-        @Override
-        public void run() {
-            videoProgressUpdate();
-            handler.postDelayed(run, 100);
-        }
-    };
 
     @Override
     protected void onDestroy() {
@@ -1171,5 +1126,31 @@ public class TrimVideoActivity extends BaseActivity  {
 
 
         super.onDestroy();
+    }
+    interface MODE_FILTER {
+        int MODE_NORMAL = 1001;
+        int MODE_SPLIT = 1002;
+    }
+
+    private static class MainHandler extends Handler {
+
+        private final WeakReference<TrimVideoActivity> mActivity;
+
+        MainHandler(TrimVideoActivity activity) {
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            TrimVideoActivity activity = mActivity.get();
+            if (activity != null) {
+                if (msg.what == ExtractFrameWorkThread.MSG_SAVE_SUCCESS) {
+                    if (activity.videoEditAdapter != null) {
+                        VideoEditInfo info = (VideoEditInfo) msg.obj;
+                        activity.videoEditAdapter.addItemVideoInfo(info);
+                    }
+                }
+            }
+        }
     }
 }

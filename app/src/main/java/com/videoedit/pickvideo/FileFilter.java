@@ -174,7 +174,7 @@ import com.videoedit.pickvideo.callback.FilterResultCallback;
 
 public class FileFilter {
 
-    public static void getVideos(FragmentActivity activity, FilterResultCallback<VideoFile> callback){
+    public static void getVideos(FragmentActivity activity, FilterResultCallback<VideoFile> callback) {
         activity.getSupportLoaderManager().initLoader(1, null,
                 new FileLoaderCallbacks(activity, callback, FileLoaderCallbacks.TYPE_VIDEO));
     }

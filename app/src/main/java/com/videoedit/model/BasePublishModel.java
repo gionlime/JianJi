@@ -172,5 +172,6 @@ package com.videoedit.model;
 public interface BasePublishModel {
 
     String getName();
+
     String getHeaderUrl();
 }

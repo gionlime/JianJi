@@ -171,21 +171,20 @@ import com.videoedit.utils.OpenGlUtils;
 /**
  * 黑白滤镜，
  * Converts the video into black and white colors
- *
  */
 public class BlackAndWhiteEffect extends GlFilter {
 
     private static final String SCRIPT =
-        "   vec4 color = texture2D(sTexture, vTextureCoord);\n"
-        + "  float colorR = (color.r + color.g + color.b) / 3.0;\n"
-        + "  float colorG = (color.r + color.g + color.b) / 3.0;\n"
-        + "  float colorB = (color.r + color.g + color.b) / 3.0;\n"
-        + "  gl_FragColor = vec4(colorR, colorG, colorB, color.a);\n";
+            "   vec4 color = texture2D(sTexture, vTextureCoord);\n"
+                    + "  float colorR = (color.r + color.g + color.b) / 3.0;\n"
+                    + "  float colorG = (color.r + color.g + color.b) / 3.0;\n"
+                    + "  float colorB = (color.r + color.g + color.b) / 3.0;\n"
+                    + "  gl_FragColor = vec4(colorR, colorG, colorB, color.a);\n";
 
-    private static final ScriptCode CODE = 
-    		new BaseEffectScriptCode()
-    		.addContentScript(SCRIPT);
-    
+    private static final ScriptCode CODE =
+            new BaseEffectScriptCode()
+                    .addContentScript(SCRIPT);
+
     /**
      * Initialize Effect
      */

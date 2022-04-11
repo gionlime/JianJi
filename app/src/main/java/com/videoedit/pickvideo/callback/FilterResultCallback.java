@@ -165,10 +165,10 @@
 
 package com.videoedit.pickvideo.callback;
 
-import java.util.List;
-
 import com.videoedit.pickvideo.beans.BaseFile;
 import com.videoedit.pickvideo.beans.Directory;
+
+import java.util.List;
 
 public interface FilterResultCallback<T extends BaseFile> {
     void onResult(List<Directory<T>> directories);

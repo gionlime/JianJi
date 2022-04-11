@@ -179,13 +179,14 @@ import com.videoedit.view.VideoEditInfo;
 public class VideoExtractFrameAsyncUtils {
 
     private Handler mHandler;
-    private  int extractW;
-    private  int extractH;
+    private int extractW;
+    private int extractH;
+    private volatile boolean stop;
 
     public VideoExtractFrameAsyncUtils(int extractW, int extractH, Handler mHandler) {
         this.mHandler = mHandler;
-        this.extractW=extractW;
-        this.extractH=extractH;
+        this.extractW = extractW;
+        this.extractH = extractH;
     }
 
     public void getVideoThumbnailsInfoForEdit(String videoPath, String OutPutFileDirPath, long startPosition, long endPosition, int thumbnailsCount) {
@@ -222,7 +223,7 @@ public class VideoExtractFrameAsyncUtils {
      * @param time time
      */
     private void sendAPic(String path, long time) {
-        if(TextUtils.isEmpty(path)){
+        if (TextUtils.isEmpty(path)) {
             return;
         }
         VideoEditInfo info = new VideoEditInfo();
@@ -239,8 +240,8 @@ public class VideoExtractFrameAsyncUtils {
             //如果对bitmap进行缩放处理,得到的图片大小很小(1kb左右)但会非常模糊,不缩放图片大小60kb左右图片很清晰
 //            Bitmap bitmapNew= scaleImage(bitmap);
             Bitmap bitmapNew = bitmap;
-            String path= VideoUtil.saveImageToSDForEdit(bitmapNew, OutPutFileDirPath, System.currentTimeMillis() + "_" + time + VideoUtil.POSTFIX);
-            if (bitmapNew!=null &&!bitmapNew.isRecycled()) {
+            String path = VideoUtil.saveImageToSDForEdit(bitmapNew, OutPutFileDirPath, System.currentTimeMillis() + "_" + time + VideoUtil.POSTFIX);
+            if (bitmapNew != null && !bitmapNew.isRecycled()) {
                 bitmapNew.recycle();
                 bitmapNew = null;
             }
@@ -273,9 +274,6 @@ public class VideoExtractFrameAsyncUtils {
         }
         return newBm;
     }
-
-
-    private volatile boolean stop;
 
     public void stopExtract() {
         stop = true;

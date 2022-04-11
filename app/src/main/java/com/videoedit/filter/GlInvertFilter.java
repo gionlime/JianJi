@@ -184,7 +184,7 @@ public class GlInvertFilter extends GlFilter {
 
 
     public GlInvertFilter() {
-        super(OpenGlUtils.DEFAULT_VERTEX_SHADER,  CODE.getScript());
+        super(OpenGlUtils.DEFAULT_VERTEX_SHADER, CODE.getScript());
     }
 }
 

@@ -165,6 +165,8 @@
 
 package com.videoedit.selcover;
 
+import static com.videoedit.utils.StaticFinalValues.COMR_FROM_SEL_COVER_TIME_ACTIVITY;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -208,8 +210,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.videoedit.utils.StaticFinalValues.COMR_FROM_SEL_COVER_TIME_ACTIVITY;
-
 
 public class SelCoverTimeActivity extends AppCompatActivity {
 
@@ -217,6 +217,13 @@ public class SelCoverTimeActivity extends AppCompatActivity {
 
     private static final int SUBMIT = 1;
     private static final int SAVE_BITMAP = 2;
+    private static final int MAX_COUNT_RANGE = 11;//seekBar的区域内一共有多少张图片
+    private static final int MARGIN = UIUtils.dp2Px(56); //左右两边间距
+    private final MainHandler mUIHandler = new MainHandler(this);
+    public SelCoverAdapter mSelCoverAdapter;
+    public String mVideoRotation;
+    public boolean isShowBitmap = false;
+    public int mVideoHeight, mVideoWidth, mVideoDuration;
     @BindView(R.id.iv_back)
     ImageView mIvBack;
     @BindView(R.id.cut_time_finish_tv)
@@ -231,60 +238,21 @@ public class SelCoverTimeActivity extends AppCompatActivity {
     ImageView mSelCoverVideoView;
     @BindView(R.id.sel_cover_tv)
     TextView mSelCoverTv;
-
+    int rootViewVisibleHeight;//纪录根视图的显示高度
     private ExtractFrameWorkThread mExtractFrameWorkThread;
-
     private String mVideoPath = "";
-    public SelCoverAdapter mSelCoverAdapter;
     private float mSelStartTime = 0.5f;
     private boolean mIsSelTime;//是否点了完成按钮
-    public String mVideoRotation;
     private LinearLayoutManager mLinearLayoutManager;
     private String mCommentStr = "";//最终输入框的文案
     private View rootView;//activity的根视图
-    int rootViewVisibleHeight;//纪录根视图的显示高度
-    private static final int MAX_COUNT_RANGE = 11;//seekBar的区域内一共有多少张图片
     private int mMaxWidth; //可裁剪区域的最大宽度
-    private static final int MARGIN = UIUtils.dp2Px(56); //左右两边间距
     private String OutPutFileDirPath;
-
     private ArrayList<PublishSharpHotModel> mSharpHotList;
     private ArrayList<PublishSharpActivityModel> mSharpActivityList;
     private ArrayList<PublishAtFriendsModel> mATFriends;
     private ArrayList<PublishAtPrenticeModel> mATPrentice;
-
     private int mScrollerPosition = 0;
-
-    public boolean isShowBitmap = false;
-
-    private final MainHandler mUIHandler = new MainHandler(this);
-
-    private static class MainHandler extends Handler {
-
-        private final WeakReference<SelCoverTimeActivity> mActivity;
-
-        MainHandler(SelCoverTimeActivity activity) {
-            mActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            SelCoverTimeActivity activity = mActivity.get();
-            if (activity != null) {
-                if (msg.what == ExtractFrameWorkThread.MSG_SAVE_SUCCESS) {
-                    if (activity.mSelCoverAdapter != null) {
-                        VideoEditInfo info = (VideoEditInfo) msg.obj;
-                        activity.mSelCoverAdapter.addItemVideoInfo(info);
-                        if(!activity.isShowBitmap){
-                            Glide.with(activity).load(Uri.fromFile(new File(info.path))).into(activity.mSelCoverVideoView);
-                            activity.isShowBitmap = true;
-                        }
-                    }
-
-                }
-            }
-        }
-    }
 
     public static void launch(Activity activity, String outputPath) {
         Intent intent = new Intent(activity, SelCoverTimeActivity.class);
@@ -317,11 +285,11 @@ public class SelCoverTimeActivity extends AppCompatActivity {
             public void onScrollStateChange() {
                 float rectLeft = mThumbSelTimeView.getRectLeft();
                 mSelStartTime = (mVideoDuration * rectLeft) / 1000;
-                mScrollerPosition = (int)((mSelCoverAdapter.getDataList().size() * rectLeft)) - 1;
-                if(mScrollerPosition >= mSelCoverAdapter.getDataList().size()){
+                mScrollerPosition = (int) ((mSelCoverAdapter.getDataList().size() * rectLeft)) - 1;
+                if (mScrollerPosition >= mSelCoverAdapter.getDataList().size()) {
                     mScrollerPosition = mSelCoverAdapter.getDataList().size() - 1;
                 }
-                Log.d(TAG,"mScrollerPosition---->" + mSelCoverAdapter.getDataList().get(mScrollerPosition).path);
+                Log.d(TAG, "mScrollerPosition---->" + mSelCoverAdapter.getDataList().get(mScrollerPosition).path);
                 Glide.with(SelCoverTimeActivity.this).load(Uri.fromFile(new File(mSelCoverAdapter.getDataList().get(mScrollerPosition).path))).into(mSelCoverVideoView);
 
             }
@@ -351,10 +319,10 @@ public class SelCoverTimeActivity extends AppCompatActivity {
 
     private void initSetParam() {
         ViewGroup.LayoutParams layoutParams = mSelCoverVideoView.getLayoutParams();
-        if(mVideoRotation.equals("0") && mVideoWidth > mVideoHeight) {//本地视频横屏 0表示竖屏
+        if (mVideoRotation.equals("0") && mVideoWidth > mVideoHeight) {//本地视频横屏 0表示竖屏
             layoutParams.width = 1120;
             layoutParams.height = 630;
-        }else{
+        } else {
             layoutParams.width = 630;
             layoutParams.height = 1120;
         }
@@ -373,8 +341,6 @@ public class SelCoverTimeActivity extends AppCompatActivity {
         mCutRecyclerView.setAdapter(mSelCoverAdapter);
 
     }
-
-    public int mVideoHeight, mVideoWidth, mVideoDuration;
 
     private void initThumbs() {
         final MediaMetadataRetriever mediaMetadata = new MediaMetadataRetriever();
@@ -399,7 +365,6 @@ public class SelCoverTimeActivity extends AppCompatActivity {
         mExtractFrameWorkThread.start();
     }
 
-
     @OnClick({R.id.iv_back, R.id.cut_time_finish_tv})
     public void onViewClicked(View view) {
         switch (view.getId()) {
@@ -416,29 +381,54 @@ public class SelCoverTimeActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = getIntent();
-        if(mIsSelTime){
-            if(mSelStartTime < 0.5f){
+        if (mIsSelTime) {
+            if (mSelStartTime < 0.5f) {
                 mSelStartTime = 0.5f;
             }
-            intent.putExtra(StaticFinalValues.CUT_TIME,mSelStartTime);
-        }else{
-            intent.putExtra(StaticFinalValues.CUT_TIME,0.5f);
+            intent.putExtra(StaticFinalValues.CUT_TIME, mSelStartTime);
+        } else {
+            intent.putExtra(StaticFinalValues.CUT_TIME, 0.5f);
         }
-        setResult(COMR_FROM_SEL_COVER_TIME_ACTIVITY,intent);
+        setResult(COMR_FROM_SEL_COVER_TIME_ACTIVITY, intent);
         super.onBackPressed();
     }
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new ContextWrapper(newBase)
-        {
+        super.attachBaseContext(new ContextWrapper(newBase) {
             @Override
-            public Object getSystemService(String name)
-            {
+            public Object getSystemService(String name) {
                 if (Context.AUDIO_SERVICE.equals(name))
                     return getApplicationContext().getSystemService(name);
                 return super.getSystemService(name);
             }
         });
+    }
+
+    private static class MainHandler extends Handler {
+
+        private final WeakReference<SelCoverTimeActivity> mActivity;
+
+        MainHandler(SelCoverTimeActivity activity) {
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            SelCoverTimeActivity activity = mActivity.get();
+            if (activity != null) {
+                if (msg.what == ExtractFrameWorkThread.MSG_SAVE_SUCCESS) {
+                    if (activity.mSelCoverAdapter != null) {
+                        VideoEditInfo info = (VideoEditInfo) msg.obj;
+                        activity.mSelCoverAdapter.addItemVideoInfo(info);
+                        if (!activity.isShowBitmap) {
+                            Glide.with(activity).load(Uri.fromFile(new File(info.path))).into(activity.mSelCoverVideoView);
+                            activity.isShowBitmap = true;
+                        }
+                    }
+
+                }
+            }
+        }
     }
 }

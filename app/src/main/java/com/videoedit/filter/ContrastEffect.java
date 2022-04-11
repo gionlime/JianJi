@@ -171,7 +171,6 @@ import com.videoedit.utils.OpenGlUtils;
 
 /**
  * Adjusts the contrast of the video.
- *
  */
 public class ContrastEffect extends GlFilter {
 

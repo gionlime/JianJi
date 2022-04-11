@@ -165,6 +165,11 @@
 
 package com.videoedit.filter.base;
 
+import static com.videoedit.effect.render.VideoGlRender.ROT_0;
+import static com.videoedit.effect.render.VideoGlRender.ROT_180;
+import static com.videoedit.effect.render.VideoGlRender.ROT_270;
+import static com.videoedit.effect.render.VideoGlRender.ROT_90;
+
 import android.content.res.Resources;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
@@ -179,11 +184,6 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import static com.videoedit.effect.render.VideoGlRender.ROT_0;
-import static com.videoedit.effect.render.VideoGlRender.ROT_180;
-import static com.videoedit.effect.render.VideoGlRender.ROT_270;
-import static com.videoedit.effect.render.VideoGlRender.ROT_90;
-
 public class GlFilter {
 
     private static final String TAG = GlFilter.class.getSimpleName();
@@ -193,49 +193,42 @@ public class GlFilter {
     private static final int TRIANGLE_VERTICES_DATA_UV_OFFSET = 3;
 
     private final float[] triangleVerticesData = {
-        // X, Y, Z, U, V
-        -1.0f, -1.0f, 0, 0.f, 0.f,
-        1.0f, -1.0f, 0, 1.f, 0.f,
-        -1.0f, 1.0f, 0, 0.f, 1.f,
-        1.0f, 1.0f, 0, 1.f, 1.f,
+            // X, Y, Z, U, V
+            -1.0f, -1.0f, 0, 0.f, 0.f,
+            1.0f, -1.0f, 0, 1.f, 0.f,
+            -1.0f, 1.0f, 0, 0.f, 1.f,
+            1.0f, 1.0f, 0, 1.f, 1.f,
     };
-
-    //顶点坐标
-    private float pos[] = {
-            -1.0f,  1.0f,
-            -1.0f, -1.0f,
-            1.0f, 1.0f,
-            1.0f,  -1.0f,
-    };
-
+    private final HashMap<String, Integer> handleMap = new HashMap<>();
+    private final LinkedList<Runnable> mRunOnDraw;
     /**
      * 纹理坐标Buffer
      */
     protected FloatBuffer mTexBuffer;
-
-    private FloatBuffer mVerBuffer;
-
-    private String vertexShaderSource;
-
-    private String fragmentShaderSource;
-
-    private int program;
-
-    private int textureID = -12345;
-
     protected float[] clearColor = new float[]{0f, 0f, 0f, 1f};
-
-    private final HashMap<String, Integer> handleMap = new HashMap<>();
-
     protected int mOutputWidth;
-
     protected int mOutputHeight;
-
-    private final LinkedList<Runnable> mRunOnDraw;
-
-    private boolean mChangeProgram = false;
-
     int rotation = 0;
+    //顶点坐标
+    private float pos[] = {
+            -1.0f, 1.0f,
+            -1.0f, -1.0f,
+            1.0f, 1.0f,
+            1.0f, -1.0f,
+    };
+    private FloatBuffer mVerBuffer;
+    private String vertexShaderSource;
+    private String fragmentShaderSource;
+    private int program;
+    private int textureID = -12345;
+    private boolean mChangeProgram = false;
+    //纹理坐标
+    private float[] coord = {
+            0.0f, 1.0f,
+            0.0f, 0.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+    };
 
     public GlFilter() {
         this(OpenGlUtils.DEFAULT_VERTEX_SHADER, OpenGlUtils.DEFAULT_FRAGMENT_SHADER);
@@ -246,45 +239,37 @@ public class GlFilter {
     }
 
     public GlFilter(final String vertexShaderSource) {
-    	this(vertexShaderSource,null);
+        this(vertexShaderSource, null);
     }
 
-    //纹理坐标
-    private float[] coord={
-            0.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-    };
-    
     public GlFilter(final String vertexShaderSource, final String fragmentShaderSource) {
         this.vertexShaderSource = vertexShaderSource;
         this.fragmentShaderSource = fragmentShaderSource;
         this.mRunOnDraw = new LinkedList<>();
 
-        ByteBuffer a= ByteBuffer.allocateDirect(32);
+        ByteBuffer a = ByteBuffer.allocateDirect(32);
         a.order(ByteOrder.nativeOrder());
-        mVerBuffer=a.asFloatBuffer();
+        mVerBuffer = a.asFloatBuffer();
         mVerBuffer.put(pos);
         mVerBuffer.position(0);
 
 
-        ByteBuffer b= ByteBuffer.allocateDirect(32);
+        ByteBuffer b = ByteBuffer.allocateDirect(32);
         b.order(ByteOrder.nativeOrder());
-        mTexBuffer=b.asFloatBuffer();
+        mTexBuffer = b.asFloatBuffer();
         mTexBuffer.put(coord);
         mTexBuffer.position(0);
     }
-    
+
     public void setFragmentShaderSource(String fragmentShaderSource) {
-    	this.fragmentShaderSource = fragmentShaderSource;
+        this.fragmentShaderSource = fragmentShaderSource;
     }
 
     public void setUpSurface() {
         final int vertexShader = OpenGlUtils
-            .loadShader(vertexShaderSource, GLES20.GL_VERTEX_SHADER);
+                .loadShader(vertexShaderSource, GLES20.GL_VERTEX_SHADER);
         final int fragmentShader = OpenGlUtils
-            .loadShader(fragmentShaderSource, GLES20.GL_FRAGMENT_SHADER);
+                .loadShader(fragmentShaderSource, GLES20.GL_FRAGMENT_SHADER);
         program = OpenGlUtils.createProgram(vertexShader, fragmentShader);
         if (program == 0) {
             throw new RuntimeException("failed creating program");
@@ -300,19 +285,19 @@ public class GlFilter {
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureID);
         OpenGlUtils.checkGlError("glBindTexture textureID");
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER,
-            GLES20.GL_LINEAR);
+                GLES20.GL_LINEAR);
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER,
-            GLES20.GL_LINEAR);
+                GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S,
-            GLES20.GL_CLAMP_TO_EDGE);
+                GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T,
-            GLES20.GL_CLAMP_TO_EDGE);
+                GLES20.GL_CLAMP_TO_EDGE);
         OpenGlUtils.checkGlError("glTexParameter");
     }
 
     public GlFilter setRotation(int rotation) {
         this.rotation = rotation;
-        System.out.println("cdw setRotation "+rotation);
+        System.out.println("cdw setRotation " + rotation);
 
 
         float[] coord;
@@ -373,9 +358,9 @@ public class GlFilter {
 
         if (mChangeProgram) {
             final int vertexShader = OpenGlUtils
-                .loadShader(vertexShaderSource, GLES20.GL_VERTEX_SHADER);
+                    .loadShader(vertexShaderSource, GLES20.GL_VERTEX_SHADER);
             final int fragmentShader = OpenGlUtils
-                .loadShader(fragmentShaderSource, GLES20.GL_FRAGMENT_SHADER);
+                    .loadShader(fragmentShaderSource, GLES20.GL_FRAGMENT_SHADER);
             program = OpenGlUtils.createProgram(vertexShader, fragmentShader);
             mChangeProgram = false;
             Log.e(TAG, "change---program:" + program);
@@ -390,7 +375,7 @@ public class GlFilter {
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureID);
 
         mVerBuffer.position(TRIANGLE_VERTICES_DATA_POS_OFFSET);
-        GLES20.glVertexAttribPointer(getHandle("aPosition"), 2, GLES20.GL_FLOAT, false, 0,mVerBuffer);
+        GLES20.glVertexAttribPointer(getHandle("aPosition"), 2, GLES20.GL_FLOAT, false, 0, mVerBuffer);
         GLES20.glEnableVertexAttribArray(getHandle("aPosition"));
 
 //        mVerBuffer.position(TRIANGLE_VERTICES_DATA_UV_OFFSET);
@@ -415,9 +400,9 @@ public class GlFilter {
 
     public void onDraw() {
     }
-    
+
     public boolean supportRotation() {
-    	return false;
+        return false;
     }
 
     public final int getHandle(final String name) {
@@ -454,12 +439,12 @@ public class GlFilter {
         return fragmentShaderSource;
     }
 
-    public void setChangeProgram(boolean changeProgram) {
-        mChangeProgram = changeProgram;
-    }
-
     public boolean isChangeProgram() {
         return mChangeProgram;
+    }
+
+    public void setChangeProgram(boolean changeProgram) {
+        mChangeProgram = changeProgram;
     }
 
     public void release() {

@@ -193,14 +193,16 @@ public class SelCoverAdapter extends RecyclerView.Adapter<SelCoverAdapter.MyView
         mContext = context;
 
     }
-    public void addBitmapList(List<VideoEditInfo> bitmapList){
+
+    public void addBitmapList(List<VideoEditInfo> bitmapList) {
         mBitmapList = bitmapList;
         notifyDataSetChanged();
     }
 
-    public List<VideoEditInfo> getDataList(){
+    public List<VideoEditInfo> getDataList() {
         return mBitmapList;
     }
+
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.sel_cover_item, parent, false);
@@ -209,7 +211,7 @@ public class SelCoverAdapter extends RecyclerView.Adapter<SelCoverAdapter.MyView
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        if(position < mBitmapList.size()) {
+        if (position < mBitmapList.size()) {
             Glide.with(mContext).load(Uri.fromFile(new File(mBitmapList.get(position).path))).into(holder.mSelCoverIv);
         }
     }
@@ -223,20 +225,21 @@ public class SelCoverAdapter extends RecyclerView.Adapter<SelCoverAdapter.MyView
         return ret;
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.sel_cover_iv)
-        ImageView mSelCoverIv;
-        public MyViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-    }
-
     public void addItemVideoInfo(VideoEditInfo info) {
-        if(mBitmapList == null){
+        if (mBitmapList == null) {
             mBitmapList = new ArrayList<>();
         }
         mBitmapList.add(info);
         notifyItemInserted(mBitmapList.size());
+    }
+
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.sel_cover_iv)
+        ImageView mSelCoverIv;
+
+        public MyViewHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+        }
     }
 }

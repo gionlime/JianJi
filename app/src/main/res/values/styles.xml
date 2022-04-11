@@ -35,6 +35,7 @@
         <item name="android:windowExitAnimation">@anim/expression_hidden_anim</item>
         <!-- 指定消失的动画xml -->
     </style>
+
     <style name="sel_beauty_level_tv_style">
         <item name="android:layout_width">50dp</item>
         <item name="android:layout_height">50dp</item>
@@ -120,7 +121,6 @@
         <item name="android:paddingTop">8dp</item>
         <item name="android:paddingBottom">8dp</item>
     </style>
-
 
 
 </resources>

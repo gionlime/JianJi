@@ -173,7 +173,7 @@ public class PublishSharpActivityModel implements BasePublishModel {
 
     private String mName;
 
-    public PublishSharpActivityModel(String name){
+    public PublishSharpActivityModel(String name) {
         this.mName = name;
     }
 

@@ -175,8 +175,6 @@ import com.videoedit.utils.OpenGlUtils;
 
 public class OverlayEffect extends GlFilter {
 
-    float fstep = 0.0015f;
-
     private static final String SCRIPT =
             "              vec4 sample0,sample1,sample2,sample3; \n" +
                     "              float fstep=" + 0.0015f + "; \n" +
@@ -190,10 +188,10 @@ public class OverlayEffect extends GlFilter {
                     +
                     "              vec4 color=(sample0+sample1+sample2+sample3) / 4.0; \n" +
                     "              gl_FragColor=color; \n";
-
     private static final ScriptCode CODE =
             new BaseEffectScriptCode()
                     .addContentScript(SCRIPT);
+    float fstep = 0.0015f;
 
 
     public OverlayEffect() {

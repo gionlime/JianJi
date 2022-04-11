@@ -167,11 +167,11 @@ package com.videoedit.utils;
 
 import android.os.Environment;
 
+import com.videoedit.effect.helper.MagicFilterType;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import com.videoedit.effect.helper.MagicFilterType;
 
 public class ConfigUtils {
 
@@ -194,17 +194,17 @@ public class ConfigUtils {
         return sInstance;
     }
 
-    public void setMagicFilterType(MagicFilterType type) {
-        mMagicFilterType = type;
-    }
-
     public MagicFilterType getMagicFilterType() {
         return mMagicFilterType;
     }
 
+    public void setMagicFilterType(MagicFilterType type) {
+        mMagicFilterType = type;
+    }
+
     public String getOutPutFilterVideoPath() {
         return getAndroidMoviesFolder().getAbsolutePath() + "/" + new SimpleDateFormat(
-            "yyyyMM_dd-HHmmss").format(new Date()) + "filter-effect.mp4";
+                "yyyyMM_dd-HHmmss").format(new Date()) + "filter-effect.mp4";
     }
 
     public File getAndroidMoviesFolder() {

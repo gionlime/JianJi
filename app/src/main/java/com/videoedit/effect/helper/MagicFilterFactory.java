@@ -301,9 +301,9 @@ public class MagicFilterFactory {
                 return R.string.filter_blur;
             case SPLIT_BLUR_WHITE:
                 return R.string.filter_blur_white;
-                case SPLIT_2:
+            case SPLIT_2:
                 return R.string.filter_split2;
-                case SPLIT_3:
+            case SPLIT_3:
                 return R.string.filter_split3;
             default:
                 return R.string.filter_none;

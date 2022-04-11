@@ -209,7 +209,7 @@ public class GlCGAColorspaceFilter extends GlFilter {
                     "finalColor = colorMagenta;" +
                     "}" +
 
-                    "gl_FragColor = finalColor;" ;
+                    "gl_FragColor = finalColor;";
 
     private static final ScriptCode CODE =
             new BaseEffectScriptCode()

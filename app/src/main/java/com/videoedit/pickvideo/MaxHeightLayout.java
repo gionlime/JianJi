@@ -207,16 +207,16 @@ public class MaxHeightLayout extends FrameLayout {
         final int count = a.getIndexCount();
         for (int i = 0; i < count; ++i) {
             int attr = a.getIndex(i);
-            if(attr == R.styleable.MaxHeightLayout_mhl_HeightRatio){
+            if (attr == R.styleable.MaxHeightLayout_mhl_HeightRatio) {
                 mMaxRatio = a.getFloat(attr, DEFAULT_MAX_RATIO);
-            }else if(attr == R.styleable.MaxHeightLayout_mhl_HeightDimen){
+            } else if (attr == R.styleable.MaxHeightLayout_mhl_HeightDimen) {
                 mMaxHeight = a.getDimension(attr, DEFAULT_MAX_HEIGHT);
             }
         }
         a.recycle();
     }
 
-    private void init(){
+    private void init() {
         if (mMaxHeight <= 0) {
             mMaxHeight = mMaxRatio * (float) getScreenHeight(getContext());
         } else {

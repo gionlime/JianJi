@@ -165,13 +165,23 @@
 
 package com.videoedit.pickvideo.callback;
 
+import static android.provider.BaseColumns._ID;
+import static android.provider.MediaStore.Files.FileColumns.MIME_TYPE;
+import static android.provider.MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME;
+import static android.provider.MediaStore.Images.ImageColumns.BUCKET_ID;
+import static android.provider.MediaStore.Images.ImageColumns.ORIENTATION;
+import static android.provider.MediaStore.MediaColumns.DATA;
+import static android.provider.MediaStore.MediaColumns.DATE_ADDED;
+import static android.provider.MediaStore.MediaColumns.SIZE;
+import static android.provider.MediaStore.MediaColumns.TITLE;
+import static android.provider.MediaStore.Video.VideoColumns.DURATION;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-
 
 import com.videoedit.pickvideo.Util;
 import com.videoedit.pickvideo.beans.AudioFile;
@@ -189,17 +199,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static android.provider.BaseColumns._ID;
-import static android.provider.MediaStore.Files.FileColumns.MIME_TYPE;
-import static android.provider.MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME;
-import static android.provider.MediaStore.Images.ImageColumns.BUCKET_ID;
-import static android.provider.MediaStore.Images.ImageColumns.ORIENTATION;
-import static android.provider.MediaStore.MediaColumns.DATA;
-import static android.provider.MediaStore.MediaColumns.DATE_ADDED;
-import static android.provider.MediaStore.MediaColumns.SIZE;
-import static android.provider.MediaStore.MediaColumns.TITLE;
-import static android.provider.MediaStore.Video.VideoColumns.DURATION;
 
 public class FileLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final int TYPE_IMAGE = 0;
@@ -439,8 +438,8 @@ public class FileLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor
 
     private String obtainSuffixRegex(String[] suffixes) {
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < suffixes.length ; i++) {
-            if (i ==0) {
+        for (int i = 0; i < suffixes.length; i++) {
+            if (i == 0) {
                 builder.append(suffixes[i].replace(".", ""));
             } else {
                 builder.append("|\\.");

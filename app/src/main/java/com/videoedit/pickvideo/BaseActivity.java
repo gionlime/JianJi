@@ -182,16 +182,14 @@ import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public abstract class BaseActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+    public static final String IS_NEED_FOLDER_LIST = "isNeedFolderList";
     private static final int RC_READ_EXTERNAL_STORAGE = 123;
     private static final String TAG = BaseActivity.class.getName();
-
     protected FolderListHelper mFolderHelper;
     protected boolean isNeedFolderList;
-    public static final String IS_NEED_FOLDER_LIST = "isNeedFolderList";
+    private CompositeDisposable mDisposables = new CompositeDisposable();
 
     protected abstract void permissionGranted();
-
-    private CompositeDisposable mDisposables = new CompositeDisposable();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

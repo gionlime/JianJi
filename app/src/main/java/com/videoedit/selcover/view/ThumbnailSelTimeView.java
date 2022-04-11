@@ -179,20 +179,24 @@ import com.temp.videoedit.R;
 
 public class ThumbnailSelTimeView extends View {
 
+    public int mDp2;
+    boolean scrollChange;
     private int mWidth;
     private int mHeight;
     private Paint mPaint;
     private RectF rectF;
     private int rectWidth = 100;
     private OnScrollBorderListener onScrollBorderListener;
-    public int mDp2;
+    private float downX;
+    private boolean scrollLeft;
+    private boolean scrollRight;
 
     public ThumbnailSelTimeView(Context context) {
-        this(context,null);
+        this(context, null);
     }
 
     public ThumbnailSelTimeView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs,0);
+        this(context, attrs, 0);
     }
 
     public ThumbnailSelTimeView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -204,20 +208,19 @@ public class ThumbnailSelTimeView extends View {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
-        mDp2 = (int)getResources().getDimension(R.dimen.dp2);
-        rectWidth = (int)getResources().getDimension(R.dimen.dp48);
+        mDp2 = (int) getResources().getDimension(R.dimen.dp2);
+        rectWidth = (int) getResources().getDimension(R.dimen.dp48);
         mPaint.setStrokeWidth(mDp2);
     }
-    public interface OnScrollBorderListener{
-        void OnScrollBorder(float start, float end);
-        void onScrollStateChange();
+
+    public float getRectLeft() {
+        return (float) rectF.right / (float) mWidth;
     }
-   public float getRectLeft(){
-        return (float)rectF.right/(float)mWidth;
-   }
-    public void setOnScrollBorderListener(OnScrollBorderListener listener){
+
+    public void setOnScrollBorderListener(OnScrollBorderListener listener) {
         this.onScrollBorderListener = listener;
     }
+
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
@@ -234,10 +237,6 @@ public class ThumbnailSelTimeView extends View {
         }
     }
 
-    private float downX;
-    private boolean scrollLeft;
-    private boolean scrollRight;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -245,7 +244,6 @@ public class ThumbnailSelTimeView extends View {
         return scrollLeft || scrollRight;
     }
 
-    boolean scrollChange;
     private boolean move(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -253,7 +251,7 @@ public class ThumbnailSelTimeView extends View {
                 scrollLeft = true;
                 if (downX > rectF.left && downX < rectF.right) {
 //                    scrollLeft = true;
-                }else{
+                } else {
                     rectF.left = downX;
                     rectF.right = rectF.left + rectWidth;
                     invalidate();
@@ -266,19 +264,19 @@ public class ThumbnailSelTimeView extends View {
                     rectF.left = rectF.left + scrollX;
                     rectF.right = rectF.left + rectWidth;
 
-                    if(rectF.left < 0){
+                    if (rectF.left < 0) {
                         rectF.left = 0;
                         rectF.right = rectF.left + rectWidth;
                     }
-                    if(rectF.right > mWidth){
+                    if (rectF.right > mWidth) {
                         rectF.right = mWidth;
                         rectF.left = mWidth - rectWidth;
                     }
                     scrollChange = true;
                     invalidate();
                 }
-                if(onScrollBorderListener != null){
-                    onScrollBorderListener.OnScrollBorder(rectF.left,rectF.right);
+                if (onScrollBorderListener != null) {
+                    onScrollBorderListener.OnScrollBorder(rectF.left, rectF.right);
                 }
                 downX = moveX;
                 break;
@@ -287,7 +285,7 @@ public class ThumbnailSelTimeView extends View {
                 downX = 0;
                 scrollLeft = false;
                 scrollRight = false;
-                if(scrollChange && onScrollBorderListener != null){
+                if (scrollChange && onScrollBorderListener != null) {
                     onScrollBorderListener.onScrollStateChange();
                 }
                 scrollChange = false;
@@ -301,7 +299,7 @@ public class ThumbnailSelTimeView extends View {
 
         mPaint.setColor(Color.WHITE);
         mPaint.setStyle(Paint.Style.STROKE);
-        canvas.drawRect(rectF.left,rectF.top,rectF.left + rectWidth,rectF.bottom,mPaint);
+        canvas.drawRect(rectF.left, rectF.top, rectF.left + rectWidth, rectF.bottom, mPaint);
         mPaint.setColor(Color.parseColor("#99313133"));
         mPaint.setStyle(Paint.Style.FILL);
         RectF rectF3 = new RectF();
@@ -317,5 +315,11 @@ public class ThumbnailSelTimeView extends View {
         rectF4.right = mWidth;
         rectF4.bottom = mHeight;
         canvas.drawRect(rectF4, mPaint);
+    }
+
+    public interface OnScrollBorderListener {
+        void OnScrollBorder(float start, float end);
+
+        void onScrollStateChange();
     }
 }

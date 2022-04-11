@@ -172,8 +172,8 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
-import com.videoedit.filter.base.GlFilter;
 import com.videoedit.effect.render.VideoGlRender;
+import com.videoedit.filter.base.GlFilter;
 
 
 public class GlVideoView extends GLSurfaceView {
@@ -184,12 +184,12 @@ public class GlVideoView extends GLSurfaceView {
 
     public GlVideoView(Context context) {
         super(context);
-        init(context,null);
+        init(context, null);
     }
 
     public GlVideoView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context,attrs);
+        init(context, attrs);
     }
 
     private void init(Context context, AttributeSet attrs) {
@@ -201,7 +201,7 @@ public class GlVideoView extends GLSurfaceView {
 
     }
 
-    public void init(IVideoSurface videoSurface){
+    public void init(IVideoSurface videoSurface) {
         GlFilter filter = new GlFilter();
         mRenderer = new VideoGlRender(filter, videoSurface);
 
@@ -226,6 +226,14 @@ public class GlVideoView extends GLSurfaceView {
         return configurationInfo.reqGlEsVersion >= 0x20000;
     }
 
+    /**
+     * Get the current applied filter.
+     *
+     * @return the current filter
+     */
+    public GlFilter getFilter() {
+        return mRenderer.getFilter();
+    }
 
     /**
      * Set the filter to be applied on the image.
@@ -236,16 +244,7 @@ public class GlVideoView extends GLSurfaceView {
         mRenderer.setFilter(filter);
     }
 
-    /**
-     * Get the current applied filter.
-     *
-     * @return the current filter
-     */
-    public GlFilter getFilter() {
-        return mRenderer.getFilter();
-    }
-
-    public String getVersion(){
+    public String getVersion() {
         return GPUVideoConst.Version;
     }
 

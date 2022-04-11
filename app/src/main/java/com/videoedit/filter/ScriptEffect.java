@@ -165,34 +165,26 @@
 
 package com.videoedit.filter;
 
+import com.videoedit.MyApplication;
+import com.videoedit.filter.base.GlFilter;
+import com.videoedit.utils.OpenGlUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import com.videoedit.MyApplication;
-import com.videoedit.filter.base.GlFilter;
-import com.videoedit.utils.OpenGlUtils;
-
 public abstract class ScriptEffect extends GlFilter {
-	
-	public ScriptEffect() {
-		super(OpenGlUtils.DEFAULT_VERTEX_SHADER);
-		this.setFragmentShaderSource(getShaderString(getFragmentShaderScriptName()));
-	}
-	
-	protected abstract String getFragmentShaderScriptName();
-	
-	@Override
-	public final boolean supportRotation() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-	
-	private static String getShaderString(String fileName) {
+
+    public ScriptEffect() {
+        super(OpenGlUtils.DEFAULT_VERTEX_SHADER);
+        this.setFragmentShaderSource(getShaderString(getFragmentShaderScriptName()));
+    }
+
+    private static String getShaderString(String fileName) {
         InputStream is = null;
         try {
-            is = MyApplication.getContext().getAssets().open("shader/"+fileName);
+            is = MyApplication.getContext().getAssets().open("shader/" + fileName);
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             StringBuilder builder = new StringBuilder();
             String line = null;
@@ -206,6 +198,14 @@ public abstract class ScriptEffect extends GlFilter {
         }
         return null;
     }
-	
+
+    protected abstract String getFragmentShaderScriptName();
+
+    @Override
+    public final boolean supportRotation() {
+        // TODO Auto-generated method stub
+        return true;
+    }
+
 
 }

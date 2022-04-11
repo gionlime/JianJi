@@ -215,7 +215,6 @@ public abstract class BaseAdapter<T, VH extends RecyclerView.ViewHolder> extends
     }
 
 
-
     public void setOnSelectStateListener(OnSelectStateListener<T> listener) {
         mListener = listener;
     }

@@ -173,7 +173,7 @@ public class PublishSharpHotModel implements BasePublishModel {
 
     private String mName;
 
-    public PublishSharpHotModel(String name){
+    public PublishSharpHotModel(String name) {
         this.mName = name;
     }
 

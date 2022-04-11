@@ -165,12 +165,12 @@
 
 package com.videoedit.pickvideo.loader;
 
+import static android.provider.MediaStore.MediaColumns.MIME_TYPE;
+
 import android.content.Context;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.CursorLoader;
-
-import static android.provider.MediaStore.MediaColumns.MIME_TYPE;
 
 public class AudioLoader extends CursorLoader {
     private static final String[] AUDIO_PROJECTION = {

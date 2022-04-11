@@ -172,19 +172,35 @@ import java.io.Serializable;
 
 public class VideoEditInfo implements Serializable, Parcelable {
 
+    public static final Parcelable.Creator<VideoEditInfo> CREATOR = new Parcelable.Creator<VideoEditInfo>() {
+        @Override
+        public VideoEditInfo createFromParcel(Parcel source) {
+            return new VideoEditInfo(source);
+        }
+
+        @Override
+        public VideoEditInfo[] newArray(int size) {
+            return new VideoEditInfo[size];
+        }
+    };
     public String path; //图片的sd卡路径
     public long time;//图片所在视频的时间  毫秒
+
 
     public VideoEditInfo() {
     }
 
+    protected VideoEditInfo(Parcel in) {
+        this.path = in.readString();
+        this.time = in.readLong();
+    }
 
     @Override
     public String toString() {
         return "VideoEditInfo{" +
-            "path='" + path + '\'' +
-            ", time='" + time + '\'' +
-            '}';
+                "path='" + path + '\'' +
+                ", time='" + time + '\'' +
+                '}';
     }
 
     @Override
@@ -197,21 +213,4 @@ public class VideoEditInfo implements Serializable, Parcelable {
         dest.writeString(this.path);
         dest.writeLong(this.time);
     }
-
-    protected VideoEditInfo(Parcel in) {
-        this.path = in.readString();
-        this.time = in.readLong();
-    }
-
-    public static final Parcelable.Creator<VideoEditInfo> CREATOR = new Parcelable.Creator<VideoEditInfo>() {
-        @Override
-        public VideoEditInfo createFromParcel(Parcel source) {
-            return new VideoEditInfo(source);
-        }
-
-        @Override
-        public VideoEditInfo[] newArray(int size) {
-            return new VideoEditInfo[size];
-        }
-    };
 }

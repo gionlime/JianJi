@@ -178,15 +178,9 @@ import com.temp.videoedit.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class HorizonalTwoTabBar extends LinearLayout implements View.OnClickListener{
-
-    private int mChooseTab = MultChooseTab.BAR_ONE;
+public class HorizonalTwoTabBar extends LinearLayout implements View.OnClickListener {
 
     protected LayoutInflater layoutInflater;
-
-    private MultBarClickListener listener;
-    private Context context;
-
     @BindView(R.id.tab_one)
     TextView mTabOne;
     @BindView(R.id.tab_one_bg)
@@ -195,6 +189,9 @@ public class HorizonalTwoTabBar extends LinearLayout implements View.OnClickList
     TextView mTabTwo;
     @BindView(R.id.tab_two_bg)
     View mTabTwoBg;
+    private int mChooseTab = MultChooseTab.BAR_ONE;
+    private MultBarClickListener listener;
+    private Context context;
 
     public HorizonalTwoTabBar(Context context, AttributeSet attrs, int defStyle) {
         this(context, attrs);
@@ -219,12 +216,12 @@ public class HorizonalTwoTabBar extends LinearLayout implements View.OnClickList
         mTabTwo.setOnClickListener(this);
     }
 
-    public int getCurrentChooseTab(){
+    public int getCurrentChooseTab() {
         return mChooseTab;
     }
+
     /**
      * init view
-     *
      */
     public void initData(String tab1, String tab2) {
         mTabOne.setText(tab1);
@@ -233,19 +230,19 @@ public class HorizonalTwoTabBar extends LinearLayout implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.tab_one:
-                if(mChooseTab != MultChooseTab.BAR_ONE){
+                if (mChooseTab != MultChooseTab.BAR_ONE) {
                     setTabClick(MultChooseTab.BAR_ONE);
-                    if(listener != null){
+                    if (listener != null) {
                         listener.onMultBarClick(MultChooseTab.BAR_ONE);
                     }
                 }
                 break;
             case R.id.tab_two:
-                if(mChooseTab != MultChooseTab.BAR_TWO){
+                if (mChooseTab != MultChooseTab.BAR_TWO) {
                     setTabClick(MultChooseTab.BAR_TWO);
-                    if(listener != null){
+                    if (listener != null) {
                         listener.onMultBarClick(MultChooseTab.BAR_TWO);
                     }
                 }
@@ -253,8 +250,8 @@ public class HorizonalTwoTabBar extends LinearLayout implements View.OnClickList
         }
     }
 
-    public void performTabClick(int tabNum){
-        switch (tabNum){
+    public void performTabClick(int tabNum) {
+        switch (tabNum) {
             case MultChooseTab.BAR_ONE:
                 mTabOne.performClick();
                 break;
@@ -266,16 +263,17 @@ public class HorizonalTwoTabBar extends LinearLayout implements View.OnClickList
 
     /**
      * only view
+     *
      * @param tab
      */
-    public void setTabClick(int tab){
-        if(tab == MultChooseTab.BAR_ONE){
+    public void setTabClick(int tab) {
+        if (tab == MultChooseTab.BAR_ONE) {
             mTabOneBg.setVisibility(View.VISIBLE);
             mTabTwoBg.setVisibility(View.GONE);
             mTabOne.setTextColor(ContextCompat.getColor(context, R.color.white));
             mTabTwo.setTextColor(ContextCompat.getColor(context, R.color.ff999999));
             mChooseTab = MultChooseTab.BAR_ONE;
-        }else{
+        } else {
             mTabOneBg.setVisibility(View.GONE);
             mTabTwoBg.setVisibility(View.VISIBLE);
             mTabOne.setTextColor(ContextCompat.getColor(context, R.color.ff999999));

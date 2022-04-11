@@ -165,6 +165,8 @@
 
 package com.videoedit.utils;
 
+import static android.opengl.GLES20.GL_TRUE;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -182,11 +184,82 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.IntBuffer;
 
-import static android.opengl.GLES20.GL_TRUE;
-
 public class OpenGlUtils {
 
     public static final int NO_TEXTURE = -1;
+    /**
+     * 顶点着色器
+     * //( * aTextureCoord).xy;
+     */
+    public static final String DEFAULT_VERTEX_SHADER =
+            //矩阵
+            "uniform mat4 uMVPMatrix;\n" +
+                    "uniform int orientation;\n" +
+                    //顶点坐标
+                    "attribute vec4 aPosition;\n" +
+                    //纹理坐标
+                    "attribute vec2 aTextureCoord;\n" +
+                    //传给片段着色器的纹理坐标
+                    "varying vec2 vTextureCoord;\n" +
+
+                    "void main() {\n" +
+                    "  gl_Position = uMVPMatrix * aPosition;\n" +
+                    //根据自己定义的纹理坐标和纹理矩阵求取传给片段着色器的纹理坐标
+                    "  vTextureCoord = aTextureCoord;\n" +
+                    "}\n";
+    /**
+     * 片段着色器
+     */
+    // TODO 这里hack了一下，如果fragment shader中不用到orientation，那么获取到的句柄一直是-1，不知道为啥，所以这个地方强制使用了一下。
+    public static final String DEFAULT_FRAGMENT_SHADER =
+            //使用外部纹理必须支持此扩展
+            "#extension GL_OES_EGL_image_external : require\n" +
+                    "precision mediump float;\n" +      // highp here doesn't seem to matter
+                    "varying vec2 vTextureCoord;\n" +
+                    "uniform int orientation;\n" +
+                    //外部纹理采样器
+                    "uniform samplerExternalOES sTexture;\n" +
+                    "void main() {\n" +
+                    //获取此纹理(预览图像)对应坐标的颜色值
+                    "if (orientation >= 90 && vTextureCoord.x < 0.0000001) {\n" +
+                    "  gl_FragColor = vec4(1, 0, 0, 1);\n" +
+                    "} else {\n" +
+                    "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
+                    "}\n" +
+                    "}\n";
+    /**
+     * attribute vec4 vPosition;
+     * attribute vec2 vCoord;
+     * uniform mat4 vMatrix;
+     * varying vec2 textureCoordinate;
+     * <p>
+     * void main(){
+     * gl_Position = vMatrix*vPosition;
+     * textureCoordinate = vCoord;
+     * }
+     */
+
+    public static final String NO_FILTER_VERTEX_SHADER = "" +
+            "attribute vec4 position;\n" +
+            "attribute vec4 inputTextureCoordinate;\n" +
+            " \n" +
+            "varying vec2 textureCoordinate;\n" +
+            " \n" +
+            "void main()\n" +
+            "{\n" +
+            "    gl_Position = position;\n" +
+            "    textureCoordinate = inputTextureCoordinate.xy;\n" +
+            "}";
+    public static final String NO_FILTER_FRAGMENT_SHADER = "" +
+            "#extension GL_OES_EGL_image_external : require\n" +
+            "varying highp vec2 textureCoordinate;\n" +
+            " \n" +
+            "uniform samplerExternalOES inputTexture;\n" +
+            " \n" +
+            "void main()\n" +
+            "{\n" +
+            "     gl_FragColor = texture2D(inputTexture, textureCoordinate);\n" +
+            "}";
 
     public static int loadTexture(final Bitmap img, final int usedTexId) {
         return loadTexture(img, usedTexId, true);
@@ -320,7 +393,6 @@ public class OpenGlUtils {
         return program;
     }
 
-
     public static void checkGlError(String operation) {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
@@ -363,82 +435,4 @@ public class OpenGlUtils {
         }
         return body.toString();
     }
-
-    /**
-     * 顶点着色器
-     * //( * aTextureCoord).xy;
-     */
-    public static final String DEFAULT_VERTEX_SHADER =
-            //矩阵
-            "uniform mat4 uMVPMatrix;\n" +
-                    "uniform int orientation;\n" +
-                    //顶点坐标
-                    "attribute vec4 aPosition;\n" +
-                    //纹理坐标
-                    "attribute vec2 aTextureCoord;\n" +
-                    //传给片段着色器的纹理坐标
-                    "varying vec2 vTextureCoord;\n" +
-
-                    "void main() {\n" +
-                    "  gl_Position = uMVPMatrix * aPosition;\n" +
-                    //根据自己定义的纹理坐标和纹理矩阵求取传给片段着色器的纹理坐标
-                    "  vTextureCoord = aTextureCoord;\n" +
-                    "}\n";
-
-    /**
-     * 片段着色器
-     */
-    // TODO 这里hack了一下，如果fragment shader中不用到orientation，那么获取到的句柄一直是-1，不知道为啥，所以这个地方强制使用了一下。
-    public static final String DEFAULT_FRAGMENT_SHADER =
-            //使用外部纹理必须支持此扩展
-            "#extension GL_OES_EGL_image_external : require\n" +
-                    "precision mediump float;\n" +      // highp here doesn't seem to matter
-                    "varying vec2 vTextureCoord;\n" +
-                    "uniform int orientation;\n" +
-                    //外部纹理采样器
-                    "uniform samplerExternalOES sTexture;\n" +
-                    "void main() {\n" +
-                    //获取此纹理(预览图像)对应坐标的颜色值
-                    "if (orientation >= 90 && vTextureCoord.x < 0.0000001) {\n" +
-                    "  gl_FragColor = vec4(1, 0, 0, 1);\n" +
-                    "} else {\n" +
-                    "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
-                    "}\n" +
-                    "}\n";
-
-
-    /**
-     * attribute vec4 vPosition;
-     attribute vec2 vCoord;
-     uniform mat4 vMatrix;
-     varying vec2 textureCoordinate;
-
-     void main(){
-     gl_Position = vMatrix*vPosition;
-     textureCoordinate = vCoord;
-     }
-     *
-     */
-
-    public static final String NO_FILTER_VERTEX_SHADER = "" +
-            "attribute vec4 position;\n" +
-            "attribute vec4 inputTextureCoordinate;\n" +
-            " \n" +
-            "varying vec2 textureCoordinate;\n" +
-            " \n" +
-            "void main()\n" +
-            "{\n" +
-            "    gl_Position = position;\n" +
-            "    textureCoordinate = inputTextureCoordinate.xy;\n" +
-            "}";
-    public static final String NO_FILTER_FRAGMENT_SHADER = "" +
-            "#extension GL_OES_EGL_image_external : require\n" +
-            "varying highp vec2 textureCoordinate;\n" +
-            " \n" +
-            "uniform samplerExternalOES inputTexture;\n" +
-            " \n" +
-            "void main()\n" +
-            "{\n" +
-            "     gl_FragColor = texture2D(inputTexture, textureCoordinate);\n" +
-            "}";
 }

@@ -165,6 +165,8 @@
 
 package com.videoedit.effect.render;
 
+import static android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES;
+
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
@@ -172,8 +174,8 @@ import android.opengl.Matrix;
 import android.os.Handler;
 import android.util.Log;
 
-import com.videoedit.filter.BaseFilter;
 import com.videoedit.effect.IVideoSurface;
+import com.videoedit.filter.BaseFilter;
 import com.videoedit.filter.base.GlFilter;
 
 import java.nio.ByteBuffer;
@@ -183,8 +185,6 @@ import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import static android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES;
 
 /**
  * @description GlSurfaceView渲染器
@@ -215,113 +215,78 @@ public class VideoGlRender implements Renderer, SurfaceTexture.OnFrameAvailableL
             -1.0f, 1.0f, 0, 0.f, 1.f,
             1.0f, 1.0f, 0, 1.f, 1.f,
     };
-
-    //顶点坐标
-    private float pos[] = {
-            -1.0f,  1.0f,
-            -1.0f, -1.0f,
-            1.0f, 1.0f,
-            1.0f,  -1.0f,
-    };
-
     /**
      * 纹理坐标Buffer
      */
     protected FloatBuffer mTexBuffer;
+    protected boolean mChangeProgram = false;
 
     //     -1.0f, -1.0f,     //左下角坐标
     //     1.0f, -1.0f,     //右下角坐标
     //    -1.0f,  1.0f,     //左上角坐标
     //     1.0f,  1.0f      //右上角坐标
-
-    private GlFilter mFilter;
-
-    private IVideoSurface mVideoSurface;
-
-    private SurfaceTexture mSurfaceTexture = null;
-
-    private FloatBuffer mVerBuffer;
-
-    protected boolean mChangeProgram = false;
-
     protected boolean mChangeProgramSupportError = false;
-
-    protected float[] matrix = Arrays.copyOf(BaseFilter.OM,16);
-
+    protected float[] matrix = Arrays.copyOf(BaseFilter.OM, 16);
     protected float[] mSTMatrix = new float[16];
-
-    private int uMatrixHandle;
-
-    private int mProgram;
-
-    private int mTextureID[] = new int[2];
-
-    private int mHMatrix;
-
-    private int mOrientationIntHandle;
-
-    private int mHPosition;
-
-    private int mHCoord;
-
-    private boolean mUpdateSurface = false;
-
     protected int mCurrentViewWidth = 0;
-
     protected int mCurrentViewHeight = 0;
-
     protected int mCurrentVideoWidth = 0;
-
     protected int mCurrentVideoHeight = 0;
-
+    protected Handler mHandler = new Handler();
     int rotation = 0;
-
+    //顶点坐标
+    private float pos[] = {
+            -1.0f, 1.0f,
+            -1.0f, -1.0f,
+            1.0f, 1.0f,
+            1.0f, -1.0f,
+    };
+    private GlFilter mFilter;
+    private IVideoSurface mVideoSurface;
+    private SurfaceTexture mSurfaceTexture = null;
+    private FloatBuffer mVerBuffer;
+    private int uMatrixHandle;
+    private int mProgram;
+    private int mTextureID[] = new int[2];
+    private int mHMatrix;
+    private int mOrientationIntHandle;
+    private int mHPosition;
+    private int mHCoord;
+    private boolean mUpdateSurface = false;
     //纹理坐标
-    private float[] coord={
+    private float[] coord = {
             0.0f, 1.0f,
             0.0f, 0.0f,
             1.0f, 1.0f,
             1.0f, 0.0f,
     };
 
-    protected Handler mHandler = new Handler();
-
     public VideoGlRender(final GlFilter filter, IVideoSurface videoSurface) {
         mFilter = filter;
         mVideoSurface = videoSurface;
 
-        ByteBuffer a= ByteBuffer.allocateDirect(32);
+        ByteBuffer a = ByteBuffer.allocateDirect(32);
         a.order(ByteOrder.nativeOrder());
-        mVerBuffer=a.asFloatBuffer();
+        mVerBuffer = a.asFloatBuffer();
         mVerBuffer.put(pos);
         mVerBuffer.position(0);
 
         Matrix.setIdentityM(mSTMatrix, 0);
         Matrix.setIdentityM(matrix, 0);
-        ByteBuffer b= ByteBuffer.allocateDirect(32);
+        ByteBuffer b = ByteBuffer.allocateDirect(32);
         b.order(ByteOrder.nativeOrder());
-        mTexBuffer=b.asFloatBuffer();
+        mTexBuffer = b.asFloatBuffer();
         mTexBuffer.put(coord);
         mTexBuffer.position(0);
     }
 
-    public void setFilter(final GlFilter filter) {
-        final GlFilter oldFilter = mFilter;
-        mFilter = filter;
-        if (oldFilter != null) {
-            oldFilter.destroy();
-        }
-        mChangeProgram = true;
-        mChangeProgramSupportError = true;
-    }
-
-    public int getRotation(){
+    public int getRotation() {
         return rotation;
     }
 
     public void setRotation(int rotation) {
         this.rotation = rotation;
-        System.out.println("cdw setRotation "+rotation);
+        System.out.println("cdw setRotation " + rotation);
 
 
         float[] coord;
@@ -415,12 +380,12 @@ public class VideoGlRender implements Renderer, SurfaceTexture.OnFrameAvailableL
                     "Could not get attrib location for uMVPMatrix");
         }
 
-            mOrientationIntHandle = GLES20.glGetUniformLocation(mProgram, "orientation");
-            checkGlError("glGetUniformLocation orientation");
-            if (mOrientationIntHandle == -1) {
-                throw new RuntimeException(
-                        "Could not get uniform location for orientation");
-            }
+        mOrientationIntHandle = GLES20.glGetUniformLocation(mProgram, "orientation");
+        checkGlError("glGetUniformLocation orientation");
+        if (mOrientationIntHandle == -1) {
+            throw new RuntimeException(
+                    "Could not get uniform location for orientation");
+        }
 
 
         GLES20.glGenTextures(2, mTextureID, 0);
@@ -447,9 +412,9 @@ public class VideoGlRender implements Renderer, SurfaceTexture.OnFrameAvailableL
     public void onDrawFrame(GL10 gl) {
 //        synchronized (this) {
 //            if (mUpdateSurface) {
-                mSurfaceTexture.updateTexImage(); //获取新数据
+        mSurfaceTexture.updateTexImage(); //获取新数据
 //                mSurfaceTexture.getTransformMatrix(mSTMatrix);
-                //让新的纹理和纹理坐标系能够正确的对应
+        //让新的纹理和纹理坐标系能够正确的对应
 //                mUpdateSurface = false;
 //            }
 //        }
@@ -487,7 +452,7 @@ public class VideoGlRender implements Renderer, SurfaceTexture.OnFrameAvailableL
 
     protected void initPointerAndDraw() {
         mVerBuffer.position(TRIANGLE_VERTICES_DATA_POS_OFFSET);
-        GLES20.glVertexAttribPointer(mHPosition,2, GLES20.GL_FLOAT, false, 0,mVerBuffer);
+        GLES20.glVertexAttribPointer(mHPosition, 2, GLES20.GL_FLOAT, false, 0, mVerBuffer);
         checkGlError("glVertexAttribPointer maPosition");
         GLES20.glEnableVertexAttribArray(mHPosition);
         checkGlError("glEnableVertexAttribArray mHPosition");
@@ -501,21 +466,19 @@ public class VideoGlRender implements Renderer, SurfaceTexture.OnFrameAvailableL
 //        checkGlError("glEnableVertexAttribArray mHCoord");
 
 
-
-
-         GLES20.glVertexAttribPointer(mHCoord, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
-         checkGlError("glVertexAttribPointer mHCoord");
-         GLES20.glEnableVertexAttribArray(mHCoord);
-         checkGlError("glEnableVertexAttribArray mHCoord");
+        GLES20.glVertexAttribPointer(mHCoord, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
+        checkGlError("glVertexAttribPointer mHCoord");
+        GLES20.glEnableVertexAttribArray(mHCoord);
+        checkGlError("glEnableVertexAttribArray mHCoord");
 
         GLES20.glUniformMatrix4fv(mHMatrix, 1, false, matrix, 0);
 
         if (mFilter != null) {
-        	if (mFilter.supportRotation()) {
-        		if (mOrientationIntHandle != -1) {
+            if (mFilter.supportRotation()) {
+                if (mOrientationIntHandle != -1) {
                     GLES20.glUniform1i(mOrientationIntHandle, rotation);
                 }
-        	}
+            }
             mFilter.onDraw();
         }
 
@@ -582,5 +545,15 @@ public class VideoGlRender implements Renderer, SurfaceTexture.OnFrameAvailableL
 
     public GlFilter getFilter() {
         return mFilter;
+    }
+
+    public void setFilter(final GlFilter filter) {
+        final GlFilter oldFilter = mFilter;
+        mFilter = filter;
+        if (oldFilter != null) {
+            oldFilter.destroy();
+        }
+        mChangeProgram = true;
+        mChangeProgramSupportError = true;
     }
 }

@@ -321,7 +321,7 @@ class DecoderSurface implements SurfaceTexture.OnFrameAvailableListener {
             case PRESERVE_ASPECT_FIT:
                 scale = FillMode.getScaleAspectFit(rotation.getRotation(), inputResolution.width(), inputResolution.height(), outputResolution.width(), outputResolution.height());
                 Matrix
-                    .scaleM(MVPMatrix, 0, scale[0] * scaleDirectionX, scale[1] * scaleDirectionY, 1);
+                        .scaleM(MVPMatrix, 0, scale[0] * scaleDirectionX, scale[1] * scaleDirectionY, 1);
                 if (rotation != Rotation.NORMAL) {
                     Matrix.rotateM(MVPMatrix, 0, -rotation.getRotation(), 0.f, 0.f, 1.f);
                 }
@@ -329,7 +329,7 @@ class DecoderSurface implements SurfaceTexture.OnFrameAvailableListener {
             case PRESERVE_ASPECT_CROP:
                 scale = FillMode.getScaleAspectCrop(rotation.getRotation(), inputResolution.width(), inputResolution.height(), outputResolution.width(), outputResolution.height());
                 Matrix
-                    .scaleM(MVPMatrix, 0, scale[0] * scaleDirectionX, scale[1] * scaleDirectionY, 1);
+                        .scaleM(MVPMatrix, 0, scale[0] * scaleDirectionX, scale[1] * scaleDirectionY, 1);
                 if (rotation != Rotation.NORMAL) {
                     Matrix.rotateM(MVPMatrix, 0, -rotation.getRotation(), 0.f, 0.f, 1.f);
                 }

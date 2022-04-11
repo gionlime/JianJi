@@ -167,18 +167,18 @@ package com.videoedit.filter;
 
 public class BaseEffectScriptCode extends ScriptCode {
 
-	private static final String COMMON_CODE_HEADER = 
-			"#extension GL_OES_EGL_image_external : require\n"
-	        + "precision mediump float;\n"
-	        + "varying vec2 vTextureCoord;\n"
-	        + "uniform int orientation;\n"
-	        + "uniform samplerExternalOES sTexture;\n"
-	        + "void main() {\n"
-	        + "  if (orientation != -1) {";
+    private static final String COMMON_CODE_HEADER =
+            "#extension GL_OES_EGL_image_external : require\n"
+                    + "precision mediump float;\n"
+                    + "varying vec2 vTextureCoord;\n"
+                    + "uniform int orientation;\n"
+                    + "uniform samplerExternalOES sTexture;\n"
+                    + "void main() {\n"
+                    + "  if (orientation != -1) {";
 
-	
-	public BaseEffectScriptCode() {
-		super(COMMON_CODE_HEADER);
-	}
+
+    public BaseEffectScriptCode() {
+        super(COMMON_CODE_HEADER);
+    }
 
 }

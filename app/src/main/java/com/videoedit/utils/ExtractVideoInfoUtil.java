@@ -242,7 +242,6 @@ public class ExtractVideoInfoUtil {
     }
 
 
-
     /***
      * 获取视频的长度时间
      *

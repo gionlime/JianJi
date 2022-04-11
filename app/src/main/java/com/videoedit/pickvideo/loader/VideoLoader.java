@@ -165,12 +165,12 @@
 
 package com.videoedit.pickvideo.loader;
 
+import static android.provider.MediaStore.MediaColumns.MIME_TYPE;
+
 import android.content.Context;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.CursorLoader;
-
-import static android.provider.MediaStore.MediaColumns.MIME_TYPE;
 
 public class VideoLoader extends CursorLoader {
     private static final String[] VIDEO_PROJECTION = {
@@ -200,7 +200,7 @@ public class VideoLoader extends CursorLoader {
 
         setSelection(MIME_TYPE + "=? or " + MIME_TYPE + "=?");
         String[] selectionArgs;
-        selectionArgs = new String[] { "video/mpeg", "video/mp4" };
+        selectionArgs = new String[]{"video/mpeg", "video/mp4"};
         setSelectionArgs(selectionArgs);
     }
 }

@@ -166,33 +166,32 @@
 package com.videoedit.filter;
 
 public class ScriptCode {
-	
-	String headerScript;
-	String tailScript;
-	String contentScript;
 
-	private static final String COMMON_CODE_TAIL =
-			"  }\n"+ "}\n";
-	
-	public ScriptCode(String headerScript) {
-		this.headerScript = headerScript;
-		this.tailScript = COMMON_CODE_TAIL;
-	}
-	
-	public ScriptCode addContentScript(String contentScript) {
-		this.contentScript = contentScript;
-		return this;
-	}
-	
-	public final String getScript() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(headerScript);
-		if (this.contentScript != null) {
-			builder.append(this.contentScript);
-		}
-		if (this.tailScript != null) {
-			builder.append(this.tailScript);
-		}
-		return builder.toString();
-	}
+    private static final String COMMON_CODE_TAIL =
+            "  }\n" + "}\n";
+    String headerScript;
+    String tailScript;
+    String contentScript;
+
+    public ScriptCode(String headerScript) {
+        this.headerScript = headerScript;
+        this.tailScript = COMMON_CODE_TAIL;
+    }
+
+    public ScriptCode addContentScript(String contentScript) {
+        this.contentScript = contentScript;
+        return this;
+    }
+
+    public final String getScript() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(headerScript);
+        if (this.contentScript != null) {
+            builder.append(this.contentScript);
+        }
+        if (this.tailScript != null) {
+            builder.append(this.tailScript);
+        }
+        return builder.toString();
+    }
 }

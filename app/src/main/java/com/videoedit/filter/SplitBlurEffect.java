@@ -169,10 +169,10 @@ package com.videoedit.filter;
  * 模糊滤镜，
  */
 public class SplitBlurEffect extends ScriptEffect {
-	
-	@Override
-	protected String getFragmentShaderScriptName() {
-		// TODO Auto-generated method stub
-		return "split_blur_script.sh";
-	}
+
+    @Override
+    protected String getFragmentShaderScriptName() {
+        // TODO Auto-generated method stub
+        return "split_blur_script.sh";
+    }
 }

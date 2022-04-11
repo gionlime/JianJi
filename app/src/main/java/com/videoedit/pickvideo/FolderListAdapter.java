@@ -209,6 +209,14 @@ public class FolderListAdapter extends BaseAdapter<Directory, FolderListAdapter.
         return mList.size();
     }
 
+    public void setListener(FolderListListener listener) {
+        this.mListener = listener;
+    }
+
+    public interface FolderListListener {
+        void onFolderListClick(Directory directory);
+    }
+
     class FolderListViewHolder extends RecyclerView.ViewHolder {
         private TextView mTvTitle;
 
@@ -217,13 +225,5 @@ public class FolderListAdapter extends BaseAdapter<Directory, FolderListAdapter.
 
             mTvTitle = (TextView) itemView.findViewById(R.id.tv_folder_title);
         }
-    }
-
-    public interface FolderListListener {
-        void onFolderListClick(Directory directory);
-    }
-
-    public void setListener(FolderListListener listener) {
-        this.mListener = listener;
     }
 }

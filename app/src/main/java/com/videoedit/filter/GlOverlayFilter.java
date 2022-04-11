@@ -182,16 +182,6 @@ import com.videoedit.utils.OpenGlUtils;
 
 public abstract class GlOverlayFilter extends GlFilter implements IResolutionFilter {
 
-    private int[] textures = new int[1];
-
-    private Bitmap bitmap = null;
-
-    protected Resolution inputResolution = new Resolution(720, 1280);
-
-    public GlOverlayFilter() {
-        super(OpenGlUtils.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER);
-    }
-
     public final static String FRAGMENT_SHADER =
             "#extension GL_OES_EGL_image_external : require\n" +
                     "precision mediump float;\n" +
@@ -214,7 +204,13 @@ public abstract class GlOverlayFilter extends GlFilter implements IResolutionFil
                     "     \n" +
                     "     gl_FragColor = outputColor;\n" +
                     "}\n";
+    protected Resolution inputResolution = new Resolution(720, 1280);
+    private int[] textures = new int[1];
+    private Bitmap bitmap = null;
 
+    public GlOverlayFilter() {
+        super(OpenGlUtils.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER);
+    }
 
     @Override
     public void setResolution(Resolution resolution) {

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0E0517">
+
     <RelativeLayout
         android:id="@+id/rl_title"
         android:layout_width="match_parent"
@@ -39,44 +39,44 @@
     </RelativeLayout>
 
 
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@+id/rl_title">
+        android:layout_below="@+id/rl_title"
+        android:layout_alignParentBottom="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="20dp"
             android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
             <FrameLayout
-                android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1">
+
                 <ImageView
-                    android:layout_gravity="center"
                     android:id="@+id/sel_cover_video_view"
                     android:layout_width="200dp"
                     android:layout_height="200dp"
-                    android:scaleType="centerInside"/>
+                    android:layout_gravity="center"
+                    android:scaleType="centerInside" />
             </FrameLayout>
 
             <TextView
                 android:id="@+id/sel_cover_tv"
-                android:layout_above="@+id/sel_cover_frame_layout"
-                android:gravity="center"
-                android:layout_marginBottom="20dp"
-                android:layout_marginTop="20dp"
-                android:textSize="12sp"
-                android:textColor="@color/white"
-                android:text="选择封面"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/sel_cover_frame_layout"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:gravity="center"
+                android:text="选择封面"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
 
             <LinearLayout
                 android:id="@+id/sel_cover_frame_layout"
@@ -88,14 +88,16 @@
 
                     android:layout_width="match_parent"
                     android:layout_height="63dp">
+
                     <android.support.v7.widget.RecyclerView
                         android:id="@+id/cut_recycler_view"
                         android:layout_width="match_parent"
-                        android:layout_height="63dp"/>
+                        android:layout_height="63dp" />
+
                     <com.videoedit.selcover.view.ThumbnailSelTimeView
                         android:id="@+id/thumb_sel_time_view"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
+                        android:layout_height="match_parent" />
                 </FrameLayout>
 
             </LinearLayout>
@@ -104,7 +106,6 @@
 
 
     </FrameLayout>
-
 
 
 </RelativeLayout>

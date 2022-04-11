@@ -194,17 +194,6 @@ public class PublishAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 
     private int mCurrentTab = PublishChooseTab.TAB_SHARP_HOT;
-    public interface PublishChooseTab{
-        int TAB_SHARP_HOT = 1001;
-        int TAB_SHARP_ACTIVITY = 1002;
-        int TAB_AT_FRIENDS = 1003;
-        int TAB_AT_PRENTICE = 1004;
-    }
-
-    public interface PublicAdapterClickListener{
-        void onPublicItemClick(int tab, int position);
-    }
-
     private PublicAdapterClickListener mPublicAdapterClickListener;
 
     public PublishAdapter(Context context, PublicAdapterClickListener publicAdapterClickListener) {
@@ -212,31 +201,31 @@ public class PublishAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.mPublicAdapterClickListener = publicAdapterClickListener;
     }
 
-    public void addData(ArrayList<? extends BasePublishModel> data, int publishChooseTab){
-        switch (publishChooseTab){
+    public void addData(ArrayList<? extends BasePublishModel> data, int publishChooseTab) {
+        switch (publishChooseTab) {
             case PublishChooseTab.TAB_SHARP_HOT:
-                mSharpHotList.addAll((ArrayList<PublishSharpHotModel>)data);
+                mSharpHotList.addAll((ArrayList<PublishSharpHotModel>) data);
             case PublishChooseTab.TAB_SHARP_ACTIVITY:
-                mSharpActivityList.addAll((ArrayList<PublishSharpActivityModel>)data);
+                mSharpActivityList.addAll((ArrayList<PublishSharpActivityModel>) data);
             case PublishChooseTab.TAB_AT_FRIENDS:
-                mATFriends.addAll((ArrayList<PublishAtFriendsModel>)data);
+                mATFriends.addAll((ArrayList<PublishAtFriendsModel>) data);
             case PublishChooseTab.TAB_AT_PRENTICE:
-                mATPrentice.addAll((ArrayList<PublishAtPrenticeModel>)data);
+                mATPrentice.addAll((ArrayList<PublishAtPrenticeModel>) data);
         }
         mCurrentTab = publishChooseTab;
         notifyDataSetChanged();
     }
 
-    public void refreshData(ArrayList<? extends BasePublishModel> data, int publishChooseTab){
-        switch (publishChooseTab){
+    public void refreshData(ArrayList<? extends BasePublishModel> data, int publishChooseTab) {
+        switch (publishChooseTab) {
             case PublishChooseTab.TAB_SHARP_HOT:
-                mSharpHotList = (ArrayList<PublishSharpHotModel>)data;
+                mSharpHotList = (ArrayList<PublishSharpHotModel>) data;
             case PublishChooseTab.TAB_SHARP_ACTIVITY:
-                mSharpActivityList = (ArrayList<PublishSharpActivityModel>)data;
+                mSharpActivityList = (ArrayList<PublishSharpActivityModel>) data;
             case PublishChooseTab.TAB_AT_FRIENDS:
-                mATFriends = (ArrayList<PublishAtFriendsModel>)data;
+                mATFriends = (ArrayList<PublishAtFriendsModel>) data;
             case PublishChooseTab.TAB_AT_PRENTICE:
-                mATPrentice = (ArrayList<PublishAtPrenticeModel>)data;
+                mATPrentice = (ArrayList<PublishAtPrenticeModel>) data;
         }
         mCurrentTab = publishChooseTab;
         notifyDataSetChanged();
@@ -245,24 +234,24 @@ public class PublishAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public int getItemCount() {
         int count = 0;//老师头像姓名默认占位
-        switch (mCurrentTab){
+        switch (mCurrentTab) {
             case PublishChooseTab.TAB_SHARP_HOT:
-                if(mSharpHotList == null || mSharpHotList.size() == 0){
+                if (mSharpHotList == null || mSharpHotList.size() == 0) {
                     return 0;
                 }
                 return mSharpHotList.size();
             case PublishChooseTab.TAB_SHARP_ACTIVITY:
-                if(mSharpActivityList == null || mSharpActivityList.size() == 0){
+                if (mSharpActivityList == null || mSharpActivityList.size() == 0) {
                     return 0;
                 }
                 return mSharpActivityList.size();
             case PublishChooseTab.TAB_AT_FRIENDS:
-                if(mATFriends == null || mATFriends.size() == 0){
+                if (mATFriends == null || mATFriends.size() == 0) {
                     return 0;
                 }
                 return mATFriends.size();
             case PublishChooseTab.TAB_AT_PRENTICE:
-                if(mATPrentice == null || mATPrentice.size() == 0){
+                if (mATPrentice == null || mATPrentice.size() == 0) {
                     return 0;
                 }
                 return mATPrentice.size();
@@ -278,7 +267,7 @@ public class PublishAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        switch (viewType){
+        switch (viewType) {
 
             case PublishChooseTab.TAB_SHARP_HOT:
             case PublishChooseTab.TAB_SHARP_ACTIVITY:
@@ -286,24 +275,24 @@ public class PublishAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         .inflate(R.layout.layout_publish_sharp_cell, parent, false));
             case PublishChooseTab.TAB_AT_FRIENDS:
             case PublishChooseTab.TAB_AT_PRENTICE:
-                default:
-                    return new AtViewHolder(LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.layout_publish_at_cell, parent, false));
+            default:
+                return new AtViewHolder(LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.layout_publish_at_cell, parent, false));
         }
 
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-        switch (getItemViewType(position)){
+        switch (getItemViewType(position)) {
             case PublishChooseTab.TAB_SHARP_HOT:
             case PublishChooseTab.TAB_SHARP_ACTIVITY:
-                SharpViewHolder sharpViewHolder = (SharpViewHolder)holder;
+                SharpViewHolder sharpViewHolder = (SharpViewHolder) holder;
                 sharpViewHolder.mName.setText("#" + (mCurrentTab == PublishChooseTab.TAB_SHARP_HOT ? mSharpHotList.get(position).getName() : mSharpActivityList.get(position).getName()));
                 break;
             case PublishChooseTab.TAB_AT_FRIENDS:
             case PublishChooseTab.TAB_AT_PRENTICE:
-                AtViewHolder atViewHolder = (AtViewHolder)holder;
+                AtViewHolder atViewHolder = (AtViewHolder) holder;
                 atViewHolder.mName.setText(mCurrentTab == PublishChooseTab.TAB_AT_FRIENDS ? mATFriends.get(position).getName() : mATPrentice.get(position).getName());
 
                 break;
@@ -311,7 +300,18 @@ public class PublishAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     }
 
-    class SharpViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public interface PublishChooseTab {
+        int TAB_SHARP_HOT = 1001;
+        int TAB_SHARP_ACTIVITY = 1002;
+        int TAB_AT_FRIENDS = 1003;
+        int TAB_AT_PRENTICE = 1004;
+    }
+
+    public interface PublicAdapterClickListener {
+        void onPublicItemClick(int tab, int position);
+    }
+
+    class SharpViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         @BindView(R.id.sharp_name)
         TextView mName;
@@ -324,29 +324,30 @@ public class PublishAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         @Override
         public void onClick(View v) {
-            if(getAdapterPosition() > 0){
-                if(mPublicAdapterClickListener != null){
+            if (getAdapterPosition() > 0) {
+                if (mPublicAdapterClickListener != null) {
                     mPublicAdapterClickListener.onPublicItemClick(mCurrentTab, getAdapterPosition());
                 }
             }
         }
     }
 
-    class AtViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class AtViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
 
         @BindView(R.id.at_name)
         TextView mName;
+
         public AtViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-           itemView.setOnClickListener(this);
+            itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            if(getAdapterPosition() > 0){
-                if(mPublicAdapterClickListener != null){
+            if (getAdapterPosition() > 0) {
+                if (mPublicAdapterClickListener != null) {
                     mPublicAdapterClickListener.onPublicItemClick(mCurrentTab, getAdapterPosition());
                 }
             }

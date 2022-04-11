@@ -169,10 +169,10 @@ package com.videoedit.filter;
  * 黑白滤镜，
  */
 public class Split2Effect extends ScriptEffect {
-	
-	@Override
-	protected String getFragmentShaderScriptName() {
-		// TODO Auto-generated method stub
-		return "split2_script.sh";
-	}
+
+    @Override
+    protected String getFragmentShaderScriptName() {
+        // TODO Auto-generated method stub
+        return "split2_script.sh";
+    }
 }

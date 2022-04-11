@@ -173,7 +173,7 @@ public class PublishAtFriendsModel implements BasePublishModel {
 
     private String mName;
 
-    public PublishAtFriendsModel(String name){
+    public PublishAtFriendsModel(String name) {
         this.mName = name;
     }
 

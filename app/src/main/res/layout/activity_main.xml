@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2007 Free Software Foundation, Inc.
   ~  Everyone is permitted to copy and distribute verbatim copies
   ~  of this license document, but changing it is not allowed.
@@ -165,30 +164,28 @@
   -->
 
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.videoedit.MainActivity">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp">
+        android:layout_marginRight="20dp"
+        android:orientation="vertical">
 
 
         <Button
+            android:id="@+id/button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="100dp"
-            android:textSize="30sp"
             android:padding="20dp"
-            android:textColor="#999999"
             android:text="选择视频"
-            android:id="@+id/button"/>
-
+            android:textColor="#999999"
+            android:textSize="30sp" />
 
 
     </LinearLayout>

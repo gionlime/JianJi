@@ -180,12 +180,11 @@ import java.util.Arrays;
 
 
 public abstract class BaseFilter {
-    private static final String TAG = "BaseFilter";
     /**
      * 单位矩阵
      */
-    public static final float[] OM= MatrixUtils.getOriginalMatrix();
-
+    public static final float[] OM = MatrixUtils.getOriginalMatrix();
+    private static final String TAG = "BaseFilter";
     /**
      * 程序句柄
      */
@@ -219,23 +218,23 @@ public abstract class BaseFilter {
     /**
      * 索引坐标Buffer
      */
-    protected int mFlag=0;
+    protected int mFlag = 0;
     protected Resources mRes;
 
-    private float[] matrix= Arrays.copyOf(OM,16);
-    private int textureType=0;      //默认使用Texture2D0
-    private int textureId=0;
+    private float[] matrix = Arrays.copyOf(OM, 16);
+    private int textureType = 0;      //默认使用Texture2D0
+    private int textureId = 0;
 
     //顶点坐标
     private float pos[] = {
-            -1.0f,  1.0f,
+            -1.0f, 1.0f,
             -1.0f, -1.0f,
             1.0f, 1.0f,
-            1.0f,  -1.0f,
+            1.0f, -1.0f,
     };
 
     //纹理坐标
-    private float[] coord={
+    private float[] coord = {
             0.0f, 1.0f,
             0.0f, 0.0f,
             1.0f, 1.0f,
@@ -246,162 +245,74 @@ public abstract class BaseFilter {
     private SparseArray<float[]> mFloats;
 
 
-    public BaseFilter(Resources mRes){
-        this.mRes=mRes;
+    public BaseFilter(Resources mRes) {
+        this.mRes = mRes;
         initBuffer();
     }
-    /**
-     * Buffer初始化
-     */
-    protected void initBuffer() {
-        ByteBuffer a= ByteBuffer.allocateDirect(32);
-        a.order(ByteOrder.nativeOrder());
-        mVerBuffer=a.asFloatBuffer();
-        mVerBuffer.put(pos);
-        mVerBuffer.position(0);
-        ByteBuffer b= ByteBuffer.allocateDirect(32);
-        b.order(ByteOrder.nativeOrder());
-        mTexBuffer=b.asFloatBuffer();
-        mTexBuffer.put(coord);
-        mTexBuffer.position(0);
-    }
-    /**
-     * 清除画布
-     */
-    protected void onClear(){
-        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-    }
 
-    protected final void createProgramByAssetsFile(String vertex, String fragment){
-        createProgram(uRes(mRes,vertex),uRes(mRes,fragment));
-    }
     //通过路径加载Assets中的文本内容
-    public static String uRes(Resources mRes, String path){
-        StringBuilder result=new StringBuilder();
-        try{
-            InputStream is=mRes.getAssets().open(path);
+    public static String uRes(Resources mRes, String path) {
+        StringBuilder result = new StringBuilder();
+        try {
+            InputStream is = mRes.getAssets().open(path);
             int ch;
-            byte[] buffer=new byte[1024];
-            while (-1!=(ch=is.read(buffer))){
-                result.append(new String(buffer,0,ch));
+            byte[] buffer = new byte[1024];
+            while (-1 != (ch = is.read(buffer))) {
+                result.append(new String(buffer, 0, ch));
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
-        return result.toString().replaceAll("\\r\\n","\n");
-    }
-    protected final void createProgram(String vertex, String fragment){
-        mProgram= uCreateGlProgram(vertex,fragment);
-        mHPosition= GLES20.glGetAttribLocation(mProgram, "vPosition");
-        mHCoord= GLES20.glGetAttribLocation(mProgram,"vCoord");
-        mHMatrix= GLES20.glGetUniformLocation(mProgram,"vMatrix");
-        mHTexture= GLES20.glGetUniformLocation(mProgram,"vTexture");
+        return result.toString().replaceAll("\\r\\n", "\n");
     }
 
     //创建GL程序
-    public static int uCreateGlProgram(String vertexSource, String fragmentSource){
-        int vertex=uLoadShader(GLES20.GL_VERTEX_SHADER,vertexSource);
-        if(vertex==0)return 0;
-        int fragment=uLoadShader(GLES20.GL_FRAGMENT_SHADER,fragmentSource);
-        if(fragment==0)return 0;
-        int program= GLES20.glCreateProgram();
-        if(program!=0){
-            GLES20.glAttachShader(program,vertex);
-            GLES20.glAttachShader(program,fragment);
+    public static int uCreateGlProgram(String vertexSource, String fragmentSource) {
+        int vertex = uLoadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
+        if (vertex == 0) return 0;
+        int fragment = uLoadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+        if (fragment == 0) return 0;
+        int program = GLES20.glCreateProgram();
+        if (program != 0) {
+            GLES20.glAttachShader(program, vertex);
+            GLES20.glAttachShader(program, fragment);
             GLES20.glLinkProgram(program);
-            int[] linkStatus=new int[1];
-            GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS,linkStatus,0);
-            if(linkStatus[0]!= GLES20.GL_TRUE){
-                glError(1,"Could not link program:"+ GLES20.glGetProgramInfoLog(program));
+            int[] linkStatus = new int[1];
+            GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
+            if (linkStatus[0] != GLES20.GL_TRUE) {
+                glError(1, "Could not link program:" + GLES20.glGetProgramInfoLog(program));
                 GLES20.glDeleteProgram(program);
-                program=0;
+                program = 0;
             }
         }
         return program;
     }
-    /**加载shader*/
-    public static int uLoadShader(int shaderType, String source){
-        int shader= GLES20.glCreateShader(shaderType);
-        if(0!=shader){
-            GLES20.glShaderSource(shader,source);
+
+    /**
+     * 加载shader
+     */
+    public static int uLoadShader(int shaderType, String source) {
+        int shader = GLES20.glCreateShader(shaderType);
+        if (0 != shader) {
+            GLES20.glShaderSource(shader, source);
             GLES20.glCompileShader(shader);
-            int[] compiled=new int[1];
-            GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS,compiled,0);
-            if(compiled[0]==0){
-                glError(1,"Could not compile shader:"+shaderType);
-                glError(1,"GLES20 Error:"+ GLES20.glGetShaderInfoLog(shader));
+            int[] compiled = new int[1];
+            GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+            if (compiled[0] == 0) {
+                glError(1, "Could not compile shader:" + shaderType);
+                glError(1, "GLES20 Error:" + GLES20.glGetShaderInfoLog(shader));
                 GLES20.glDeleteShader(shader);
-                shader=0;
+                shader = 0;
             }
         }
         return shader;
     }
 
-    public static void glError(int code, Object index){
-        if(code!=0){
-            Log.e(TAG,"glError:"+code+"---"+index);
+    public static void glError(int code, Object index) {
+        if (code != 0) {
+            Log.e(TAG, "glError:" + code + "---" + index);
         }
     }
-
-    //2
-    /**
-     * 绑定默认纹理
-     */
-    protected void onBindTexture(){
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0+textureType);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,getTextureId());
-        GLES20.glUniform1i(mHTexture,textureType);
-    }
-
-    public int getOutputTexture(){
-        return -1;
-    }
-
-    public void draw(){
-        onClear();
-        onUseProgram();
-        onSetExpandData();
-        onBindTexture();
-        onDraw();
-    }
-
-    protected void onUseProgram(){
-        GLES20.glUseProgram(mProgram);
-    }
-    /**
-     * 设置其他扩展数据
-     */
-    protected void onSetExpandData(){
-        GLES20.glUniformMatrix4fv(mHMatrix,1,false,matrix,0);
-    }
-
-    /**
-     * 启用顶点坐标和纹理坐标进行绘制
-     */
-    protected void onDraw(){
-        GLES20.glEnableVertexAttribArray(mHPosition);
-        GLES20.glVertexAttribPointer(mHPosition,2, GLES20.GL_FLOAT, false, 0,mVerBuffer);
-        GLES20.glEnableVertexAttribArray(mHCoord);
-        GLES20.glVertexAttribPointer(mHCoord, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
-        GLES20.glDisableVertexAttribArray(mHPosition);
-        GLES20.glDisableVertexAttribArray(mHCoord);
-    }
-
-    public final void setSize(int width,int height){
-        onSizeChanged(width,height);
-    }
-
-    //========================================
-    public final void create(){
-        onCreate();
-    }
-    protected abstract void onCreate();
-    protected abstract void onSizeChanged(int width,int height);
-
-
-    //============================================Getting And Setting
 
     public static String getTAG() {
         return TAG;
@@ -410,6 +321,105 @@ public abstract class BaseFilter {
     public static float[] getOM() {
         return OM;
     }
+
+    /**
+     * Buffer初始化
+     */
+    protected void initBuffer() {
+        ByteBuffer a = ByteBuffer.allocateDirect(32);
+        a.order(ByteOrder.nativeOrder());
+        mVerBuffer = a.asFloatBuffer();
+        mVerBuffer.put(pos);
+        mVerBuffer.position(0);
+        ByteBuffer b = ByteBuffer.allocateDirect(32);
+        b.order(ByteOrder.nativeOrder());
+        mTexBuffer = b.asFloatBuffer();
+        mTexBuffer.put(coord);
+        mTexBuffer.position(0);
+    }
+
+    /**
+     * 清除画布
+     */
+    protected void onClear() {
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+    }
+
+    //2
+
+    protected final void createProgramByAssetsFile(String vertex, String fragment) {
+        createProgram(uRes(mRes, vertex), uRes(mRes, fragment));
+    }
+
+    protected final void createProgram(String vertex, String fragment) {
+        mProgram = uCreateGlProgram(vertex, fragment);
+        mHPosition = GLES20.glGetAttribLocation(mProgram, "vPosition");
+        mHCoord = GLES20.glGetAttribLocation(mProgram, "vCoord");
+        mHMatrix = GLES20.glGetUniformLocation(mProgram, "vMatrix");
+        mHTexture = GLES20.glGetUniformLocation(mProgram, "vTexture");
+    }
+
+    /**
+     * 绑定默认纹理
+     */
+    protected void onBindTexture() {
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + textureType);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, getTextureId());
+        GLES20.glUniform1i(mHTexture, textureType);
+    }
+
+    public int getOutputTexture() {
+        return -1;
+    }
+
+    public void draw() {
+        onClear();
+        onUseProgram();
+        onSetExpandData();
+        onBindTexture();
+        onDraw();
+    }
+
+    protected void onUseProgram() {
+        GLES20.glUseProgram(mProgram);
+    }
+
+    /**
+     * 设置其他扩展数据
+     */
+    protected void onSetExpandData() {
+        GLES20.glUniformMatrix4fv(mHMatrix, 1, false, matrix, 0);
+    }
+
+    /**
+     * 启用顶点坐标和纹理坐标进行绘制
+     */
+    protected void onDraw() {
+        GLES20.glEnableVertexAttribArray(mHPosition);
+        GLES20.glVertexAttribPointer(mHPosition, 2, GLES20.GL_FLOAT, false, 0, mVerBuffer);
+        GLES20.glEnableVertexAttribArray(mHCoord);
+        GLES20.glVertexAttribPointer(mHCoord, 2, GLES20.GL_FLOAT, false, 0, mTexBuffer);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES20.glDisableVertexAttribArray(mHPosition);
+        GLES20.glDisableVertexAttribArray(mHCoord);
+    }
+
+    public final void setSize(int width, int height) {
+        onSizeChanged(width, height);
+    }
+
+    //========================================
+    public final void create() {
+        onCreate();
+    }
+
+
+    //============================================Getting And Setting
+
+    protected abstract void onCreate();
+
+    protected abstract void onSizeChanged(int width, int height);
 
     public int getProgram() {
         return mProgram;

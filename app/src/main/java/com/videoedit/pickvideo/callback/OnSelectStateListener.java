@@ -166,5 +166,5 @@
 package com.videoedit.pickvideo.callback;
 
 public interface OnSelectStateListener<T> {
-        void OnSelectStateChanged(T file);
-    }
+    void OnSelectStateChanged(T file);
+}

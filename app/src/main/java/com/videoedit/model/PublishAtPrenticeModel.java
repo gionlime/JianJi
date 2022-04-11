@@ -173,7 +173,7 @@ public class PublishAtPrenticeModel implements BasePublishModel {
 
     private String mName;
 
-    public PublishAtPrenticeModel(String name){
+    public PublishAtPrenticeModel(String name) {
         this.mName = name;
     }
 

@@ -169,10 +169,10 @@ package com.videoedit.filter;
  * 三屏滤镜
  */
 public class Split3Effect extends ScriptEffect {
-	
-	@Override
-	protected String getFragmentShaderScriptName() {
-		// TODO Auto-generated method stub
-		return "split3_script.sh";
-	}
+
+    @Override
+    protected String getFragmentShaderScriptName() {
+        // TODO Auto-generated method stub
+        return "split3_script.sh";
+    }
 }

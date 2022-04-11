@@ -172,7 +172,6 @@ import android.media.MediaFormat;
 import java.io.IOException;
 
 
-
 class RemixAudioComposer implements IAudioComposer {
     private static final MuxRender.SampleType SAMPLE_TYPE = MuxRender.SampleType.AUDIO;
 
@@ -182,29 +181,23 @@ class RemixAudioComposer implements IAudioComposer {
 
     private final MediaExtractor extractor;
     private final MuxRender muxer;
-    private long writtenPresentationTimeUs;
-
     private final int trackIndex;
-    private int muxCount = 1;
-
     private final MediaFormat outputFormat;
-
     private final MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+    private final int timeScale;
+    private long writtenPresentationTimeUs;
+    private int muxCount = 1;
     private MediaCodec decoder;
     private MediaCodec encoder;
     private MediaFormat actualOutputFormat;
-
     private MediaCodecBufferCompatWrapper decoderBuffers;
     private MediaCodecBufferCompatWrapper encoderBuffers;
-
     private boolean isExtractorEOS;
     private boolean isDecoderEOS;
     private boolean isEncoderEOS;
     private boolean decoderStarted;
     private boolean encoderStarted;
-
     private AudioChannel audioChannel;
-    private final int timeScale;
 
     public RemixAudioComposer(MediaExtractor extractor, int trackIndex,
                               MediaFormat outputFormat, MuxRender muxer, int timeScale) {

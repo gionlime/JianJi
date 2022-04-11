@@ -198,21 +198,23 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class VideoUtil {
 
-    private static final String TAG = VideoUtil.class.getSimpleName();
     public static final int VIDEO_MAX_DURATION = 10;// 15秒
     public static final int MIN_TIME_FRAME = 3;
+    public static final String POSTFIX = ".jpeg";
+    private static final String TAG = VideoUtil.class.getSimpleName();
     private static final int thumb_Width = (UIUtils.getScreenWidth() - UIUtils.dp2Px(16)) / VIDEO_MAX_DURATION;
     private static final int thumb_Height = UIUtils.dp2Px(62);
     private static final long one_frame_time = 1000000;
-    public static final String POSTFIX = ".jpeg";
     private static final String TRIM_PATH = "small_video";
     private static final String THUMB_PATH = "thumb";
 
     /**
      * 获取视频的帧图片
+     *
      * @param context
      * @param videoUri
      */
@@ -227,18 +229,18 @@ public class VideoUtil {
                     mediaMetadataRetriever.setDataSource(context, videoUri);
                     // Retrieve media data use microsecond
                     long videoLengthInMs = Long.parseLong(mediaMetadataRetriever
-                        .extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000;
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000;
                     long numThumbs =
-                        videoLengthInMs < one_frame_time ? 1 : (videoLengthInMs / one_frame_time);
+                            videoLengthInMs < one_frame_time ? 1 : (videoLengthInMs / one_frame_time);
                     final long interval = videoLengthInMs / numThumbs;
 
                     //每次截取到3帧之后上报
                     for (long i = 0; i < numThumbs; ++i) {
                         Bitmap bitmap = mediaMetadataRetriever.getFrameAtTime(i * interval,
-                            MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                                MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                         try {
                             bitmap = Bitmap
-                                .createScaledBitmap(bitmap, thumb_Width, thumb_Height, false);
+                                    .createScaledBitmap(bitmap, thumb_Width, thumb_Height, false);
                         } catch (Exception e) {
                             e.printStackTrace();
                             emitter.onError(e);
@@ -261,19 +263,18 @@ public class VideoUtil {
                 emitter.onComplete();
             }
         })
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread());
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread());
     }
-
 
 
     /**
      * 裁剪视频(异步操作)
      *
-     * @param src 源文件
-     * @param dest 输出地址
+     * @param src      源文件
+     * @param dest     输出地址
      * @param startSec 开始时间
-     * @param endSec 结束时间
+     * @param endSec   结束时间
      */
     public static Observable<String> cutVideo(final String src, final String dest, final double startSec, final double endSec) {
 
@@ -300,7 +301,7 @@ public class VideoUtil {
                                 // multiple qualities of the same video (Microsoft Smooth Streaming file)
 
                                 throw new RuntimeException(
-                                    "The startTime has already been corrected by another track with SyncSample. Not Supported.");
+                                        "The startTime has already been corrected by another track with SyncSample. Not Supported.");
                             }
                             //矫正开始时间
                             startSecond = correctTimeToSyncSample(track, startSecond, false);
@@ -348,7 +349,7 @@ public class VideoUtil {
                             lastTime = currentTime;
                             //计算出某一帧的时长 = 采样时长 / 时间长度
                             currentTime +=
-                                (double) delta / (double) track.getTrackMetaData().getTimescale();
+                                    (double) delta / (double) track.getTrackMetaData().getTimescale();
                             //这里就是帧数（采样）加一
                             currentSample++;
                         }
@@ -375,16 +376,16 @@ public class VideoUtil {
                 emitter.onComplete();
             }
         })
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread());
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     /**
      * 矫正裁剪的sample位置
      *
-     * @param track 视频轨道
+     * @param track   视频轨道
      * @param cutHere 裁剪位置
-     * @param next 是否还继续裁剪
+     * @param next    是否还继续裁剪
      */
     private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
         double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
@@ -396,7 +397,7 @@ public class VideoUtil {
             if (Arrays.binarySearch(track.getSyncSamples(), currentSample + 1) >= 0) {
                 // samples always start with 1 but we start with zero therefore +1（采样的下标从1开始而不是0开始，所以要+1 ）
                 timeOfSyncSamples[Arrays
-                    .binarySearch(track.getSyncSamples(), currentSample + 1)] = currentTime;
+                        .binarySearch(track.getSyncSamples(), currentSample + 1)] = currentTime;
             }
             currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
             currentSample++;
@@ -484,6 +485,7 @@ public class VideoUtil {
 
     /**
      * 裁剪视频本地路径
+     *
      * @param context
      * @param dirName
      * @param fileNamePrefix
@@ -503,7 +505,7 @@ public class VideoUtil {
         }
         finalPath = file.getAbsolutePath();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-            .format(new Date());
+                .format(new Date());
         String outputName = fileNamePrefix + timeStamp + ".mp4";
         finalPath = finalPath + "/" + outputName;
         return finalPath;
@@ -516,10 +518,10 @@ public class VideoUtil {
         String dirPath = "";
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             dirPath = context.getExternalCacheDir() + File.separator
-                + dirName; // /mnt/sdcard/Android/data/<package name>/files/...
+                    + dirName; // /mnt/sdcard/Android/data/<package name>/files/...
         } else {
             dirPath = context.getCacheDir() + File.separator
-                + dirName; // /data/data/<package name>/files/...
+                    + dirName; // /data/data/<package name>/files/...
         }
         File file = new File(dirPath);
         if (!file.exists()) {
@@ -546,10 +548,10 @@ public class VideoUtil {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return "";
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
             return "";
-        }finally {
+        } finally {
             try {   //关闭流
                 fos.close();
             } catch (IOException e) {
@@ -557,9 +559,9 @@ public class VideoUtil {
                 return "";
             }
         }
-        if(file.exists()){
+        if (file.exists()) {
             return file.getAbsolutePath();
-        }else{
+        } else {
             return "";
         }
     }
@@ -579,12 +581,12 @@ public class VideoUtil {
     public static String getSaveEditThumbnailDir(Context context) {
         String state = Environment.getExternalStorageState();
         File rootDir =
-            state.equals(Environment.MEDIA_MOUNTED) ? context.getExternalCacheDir()
-                : context.getCacheDir();
+                state.equals(Environment.MEDIA_MOUNTED) ? context.getExternalCacheDir()
+                        : context.getCacheDir();
         File folderDir = new File(rootDir.getAbsolutePath() + File.separator + TRIM_PATH + File.separator + THUMB_PATH);
         if (folderDir == null) {
             folderDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()
-                + File.separator + "videoeditor" + File.separator + "picture");
+                    + File.separator + "videoeditor" + File.separator + "picture");
         }
         if (!folderDir.exists() && folderDir.mkdirs()) {
 

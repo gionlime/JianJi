@@ -217,7 +217,7 @@ public class SelCoverTimeActivity extends AppCompatActivity {
 
     private static final int SUBMIT = 1;
     private static final int SAVE_BITMAP = 2;
-    private static final int MAX_COUNT_RANGE = 11;//seekBar的区域内一共有多少张图片
+    private static final int MAX_COUNT_RANGE = 42;//seekBar的区域内一共有多少张图片
     private static final int MARGIN = UIUtils.dp2Px(56); //左右两边间距
     private final MainHandler mUIHandler = new MainHandler(this);
     public SelCoverAdapter mSelCoverAdapter;
